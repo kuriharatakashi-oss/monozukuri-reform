@@ -1436,38 +1436,150 @@ n² − n − 6 = 0
         </div>
       </div>`,
   },
+  rika: {
+    title: '理科（通常回）設問 AI校正ツール',
+    logoText: '理科校正 AI',
+    docTitle: '2026年度 第3回 理科（通常回）設問',
+    docMeta: '20問 · 指摘 3件（要確認 1件、提案 2件）',
+    checkOptions: [['数値・単位の誤り', true], ['実験手順の整合性', true], ['図・グラフとの対応', true], ['難易度スコア付与', false]],
+    editorHTML: `<div class="q-block">
+      <div class="q-num">大問1　力学</div>
+      <p class="q-text">次の問いに答えよ。重力加速度は <span class="highlight-warn">g = 10 m/s²</span> とする。</p>
+      <p class="q-text q-sub">問1. 質量 2 kg の物体が傾角 30° の斜面を滑り降りるときの加速度を求めよ。ただし斜面は<span class="highlight-error">なめらか（μ = 0.3）</span>とする。</p>
+    </div>
+    <div class="q-block">
+      <div class="q-num">大問2　化学平衡</div>
+      <p class="q-text q-sub">問2. ハーバー・ボッシュ法において、窒素と水素から生成するアンモニアの化学反応式を記せ。</p>
+    </div>`,
+    panelHTML: `<div class="summary-card"><div class="summary-title">指摘サマリー</div><div class="summary-stats"><div class="stat"><div class="stat-num" style="color:var(--error)">1</div><div class="stat-label">要確認</div></div><div class="stat"><div class="stat-num" style="color:var(--warn)">2</div><div class="stat-label">提案</div></div><div class="stat"><div class="stat-num" style="color:var(--ok)">0</div><div class="stat-label">承認済</div></div></div></div><div class="issue-card error"><div class="issue-header"><span class="issue-icon">🔴</span><div class="issue-info"><div class="issue-type error">数値の矛盾 · 大問1(1)</div><div class="issue-desc">「なめらか」と μ = 0.3 の記述が矛盾</div></div></div><div class="issue-body"><div class="diff-row"><div class="diff-before">なめらか（μ = 0.3）とする</div><div class="diff-after">なめらかとする（μ = 0）</div></div><div class="reason">「なめらか」は摩擦がない（μ = 0）状態を指す。μ = 0.3 を使用する場合は「粗い面（μ = 0.3）」とすべきです。</div><div class="issue-actions"><button class="btn-accept">✓ 承認</button><button class="btn-reject">✕ 却下</button></div></div></div>`,
+  },
+  physics: {
+    title: '理科（物理）設問 AI校正ツール',
+    logoText: '物理校正 AI',
+    docTitle: '2026年度 第3回 理科（物理）設問',
+    docMeta: '18問 · 指摘 2件（要確認 0件、提案 2件）',
+    checkOptions: [['数値・単位の誤り', true], ['物理法則の整合性', true], ['図・グラフとの対応', true], ['難易度スコア付与', false]],
+    editorHTML: `<div class="q-block">
+      <div class="q-num">大問1　電磁気</div>
+      <p class="q-text">コンデンサーを含む回路において、次の問いに答えよ。</p>
+      <p class="q-text q-sub">問1. 電気容量 <span class="highlight-warn">C = 2.0 × 10⁻³ F</span> のコンデンサーに電圧 V = 100 V をかけたとき蓄積される電荷を求めよ。</p>
+    </div>
+    <div class="q-block">
+      <div class="q-num">大問2　波動</div>
+      <p class="q-text q-sub">問2. 波長 λ = 500 nm の光が薄膜に入射するとき、干渉条件を求めよ。</p>
+    </div>`,
+    panelHTML: `<div class="summary-card"><div class="summary-title">指摘サマリー</div><div class="summary-stats"><div class="stat"><div class="stat-num" style="color:var(--error)">0</div><div class="stat-label">要確認</div></div><div class="stat"><div class="stat-num" style="color:var(--warn)">2</div><div class="stat-label">提案</div></div><div class="stat"><div class="stat-num" style="color:var(--ok)">1</div><div class="stat-label">承認済</div></div></div></div><div class="issue-card warn"><div class="issue-header"><span class="issue-icon">🟡</span><div class="issue-info"><div class="issue-type warn">単位表記の提案 · 大問1(1)</div><div class="issue-desc">電気容量の単位表記をよりわかりやすく統一</div></div></div><div class="issue-body"><div class="diff-row"><div class="diff-before">C = 2.0 × 10⁻³ F</div><div class="diff-after">C = 2.0 mF</div></div><div class="reason">他の問題と単位表記を統一するため mF（ミリファラド）への変換を提案します。</div><div class="issue-actions"><button class="btn-accept">✓ 承認</button><button class="btn-reject">✕ 却下</button></div></div></div>`,
+  },
+  chemistry: {
+    title: '理科（化学）設問 AI校正ツール',
+    logoText: '化学校正 AI',
+    docTitle: '2026年度 第3回 理科（化学）設問',
+    docMeta: '18問 · 指摘 4件（要確認 2件、提案 2件）',
+    checkOptions: [['化学式・反応式の誤り', true], ['数値・単位の誤り', true], ['物質名の整合性', true], ['難易度スコア付与', false]],
+    editorHTML: `<div class="q-block">
+      <div class="q-num">大問1　物質の構造</div>
+      <p class="q-text">次の化学反応式について各問いに答えよ。</p>
+      <p class="q-text q-sub">問1. メタン（CH₄）が完全燃焼するときの化学反応式を記せ。</p>
+      <p class="q-text q-sub">問2. 0℃・1 atm において <span class="highlight-error">CH₄ 22.4 g</span> が完全燃焼するとき生じる CO₂ の物質量を求めよ。</p>
+    </div>`,
+    panelHTML: `<div class="summary-card"><div class="summary-title">指摘サマリー</div><div class="summary-stats"><div class="stat"><div class="stat-num" style="color:var(--error)">2</div><div class="stat-label">要確認</div></div><div class="stat"><div class="stat-num" style="color:var(--warn)">2</div><div class="stat-label">提案</div></div><div class="stat"><div class="stat-num" style="color:var(--ok)">0</div><div class="stat-label">承認済</div></div></div></div><div class="issue-card error"><div class="issue-header"><span class="issue-icon">🔴</span><div class="issue-info"><div class="issue-type error">数値の誤り · 大問1(2)</div><div class="issue-desc">22.4 g は CH₄ 1 mol の体積（L）であり質量ではない</div></div></div><div class="issue-body"><div class="diff-row"><div class="diff-before">CH₄ 22.4 g</div><div class="diff-after">CH₄ 16.0 g（= 1 mol）</div></div><div class="reason">CH₄ の分子量は 16.0。0℃・1 atm で 22.4 L を占めるのは体積の話であり、質量（g）と混在しています。</div><div class="issue-actions"><button class="btn-accept">✓ 承認</button><button class="btn-reject">✕ 却下</button></div></div></div>`,
+  },
+  biology: {
+    title: '理科（生物）設問 AI校正ツール',
+    logoText: '生物校正 AI',
+    docTitle: '2026年度 第3回 理科（生物）設問',
+    docMeta: '18問 · 指摘 2件（要確認 1件、提案 1件）',
+    checkOptions: [['生物用語の誤り', true], ['図・グラフとの対応', true], ['実験手順の整合性', true], ['難易度スコア付与', false]],
+    editorHTML: `<div class="q-block">
+      <div class="q-num">大問1　細胞と遺伝子</div>
+      <p class="q-text">次の文章を読んで、各問いに答えよ。</p>
+      <p class="q-text q-sub">問1. DNA の二重らせん構造において、アデニン（A）と相補的に結合する塩基は <span class="highlight-error">グアニン（G）</span> である。正しい塩基名を答えよ。</p>
+      <p class="q-text q-sub">問2. ミトコンドリアで行われるエネルギー産生過程を ATP の合成という観点から説明せよ。</p>
+    </div>`,
+    panelHTML: `<div class="summary-card"><div class="summary-title">指摘サマリー</div><div class="summary-stats"><div class="stat"><div class="stat-num" style="color:var(--error)">1</div><div class="stat-label">要確認</div></div><div class="stat"><div class="stat-num" style="color:var(--warn)">1</div><div class="stat-label">提案</div></div><div class="stat"><div class="stat-num" style="color:var(--ok)">0</div><div class="stat-label">承認済</div></div></div></div><div class="issue-card error"><div class="issue-header"><span class="issue-icon">🔴</span><div class="issue-info"><div class="issue-type error">生物用語の誤り · 大問1(1)</div><div class="issue-desc">A と対になる塩基はチミン（T）</div></div></div><div class="issue-body"><div class="diff-row"><div class="diff-before">グアニン（G）</div><div class="diff-after">チミン（T）</div></div><div class="reason">DNA においてアデニン（A）と相補的に結合するのはチミン（T）です。グアニン（G）はシトシン（C）と対になります。</div><div class="issue-actions"><button class="btn-accept">✓ 承認</button><button class="btn-reject">✕ 却下</button></div></div></div>`,
+  },
+  earth: {
+    title: '理科（地学）設問 AI校正ツール',
+    logoText: '地学校正 AI',
+    docTitle: '2026年度 第3回 理科（地学）設問',
+    docMeta: '18問 · 指摘 1件（要確認 0件、提案 1件）',
+    checkOptions: [['数値・単位の誤り', true], ['地質用語の整合性', true], ['図・グラフとの対応', true], ['難易度スコア付与', false]],
+    editorHTML: `<div class="q-block">
+      <div class="q-num">大問1　地球の内部構造</div>
+      <p class="q-text">次の文章を読んで、各問いに答えよ。</p>
+      <p class="q-text q-sub">問1. 地球の外核の主成分は <span class="highlight-warn">ケイ素と酸素</span> であるとされている。正しい主成分を答えよ。</p>
+      <p class="q-text q-sub">問2. プレートテクトニクス理論において、大西洋中央海嶺での地殻の動きを説明せよ。</p>
+    </div>`,
+    panelHTML: `<div class="summary-card"><div class="summary-title">指摘サマリー</div><div class="summary-stats"><div class="stat"><div class="stat-num" style="color:var(--error)">0</div><div class="stat-label">要確認</div></div><div class="stat"><div class="stat-num" style="color:var(--warn)">1</div><div class="stat-label">提案</div></div><div class="stat"><div class="stat-num" style="color:var(--ok)">0</div><div class="stat-label">承認済</div></div></div></div><div class="issue-card warn"><div class="issue-header"><span class="issue-icon">🟡</span><div class="issue-info"><div class="issue-type warn">用語の修正提案 · 大問1(1)</div><div class="issue-desc">外核の主成分は鉄とニッケル</div></div></div><div class="issue-body"><div class="diff-row"><div class="diff-before">ケイ素と酸素</div><div class="diff-after">鉄とニッケル</div></div><div class="reason">地球の外核（深さ約 2900〜5100 km）の主成分は鉄（Fe）とニッケル（Ni）です。ケイ素・酸素はマントルや地殻の主成分です。</div><div class="issue-actions"><button class="btn-accept">✓ 承認</button><button class="btn-reject">✕ 却下</button></div></div></div>`,
+  },
+  chirekikomin: {
+    title: '地歴公民設問 AI校正ツール',
+    logoText: '地歴公民校正 AI',
+    docTitle: '2026年度 第3回 地歴公民設問',
+    docMeta: '25問 · 指摘 3件（要確認 1件、提案 2件）',
+    checkOptions: [['固有名詞・年号の誤り', true], ['歴史事実の整合性', true], ['地図・資料との対応', true], ['難易度スコア付与', false]],
+    editorHTML: `<div class="q-block">
+      <div class="q-num">大問1　日本史</div>
+      <p class="q-text">次の文章を読んで、各問いに答えよ。</p>
+      <p class="q-text q-sub">問1. <span class="highlight-error">1868 年に起きた大塩平八郎の乱</span> について、その背景と幕政への影響を 200 字以内で述べよ。</p>
+    </div>
+    <div class="q-block">
+      <div class="q-num">大問2　地理</div>
+      <p class="q-text q-sub">問2. 三大穀物（米・小麦・トウモロコシ）のうち、生産量が最も多い国を 2020 年時点のデータをもとに答えよ。</p>
+    </div>`,
+    panelHTML: `<div class="summary-card"><div class="summary-title">指摘サマリー</div><div class="summary-stats"><div class="stat"><div class="stat-num" style="color:var(--error)">1</div><div class="stat-label">要確認</div></div><div class="stat"><div class="stat-num" style="color:var(--warn)">2</div><div class="stat-label">提案</div></div><div class="stat"><div class="stat-num" style="color:var(--ok)">0</div><div class="stat-label">承認済</div></div></div></div><div class="issue-card error"><div class="issue-header"><span class="issue-icon">🔴</span><div class="issue-info"><div class="issue-type error">年号の誤り · 大問1(1)</div><div class="issue-desc">大塩平八郎の乱は 1837 年（天保 8 年）</div></div></div><div class="issue-body"><div class="diff-row"><div class="diff-before">1868 年に起きた大塩平八郎の乱</div><div class="diff-after">1837 年（天保 8 年）に起きた大塩平八郎の乱</div></div><div class="reason">大塩平八郎の乱は 1837 年の出来事です。1868 年は明治維新（王政復古の大号令）の年であり、混同が見られます。</div><div class="issue-actions"><button class="btn-accept">✓ 承認</button><button class="btn-reject">✕ 却下</button></div></div></div>`,
+  },
+  joho: {
+    title: '情報設問 AI校正ツール',
+    logoText: '情報校正 AI',
+    docTitle: '2026年度 第3回 情報設問',
+    docMeta: '15問 · 指摘 2件（要確認 0件、提案 2件）',
+    checkOptions: [['プログラムの誤り', true], ['情報用語の整合性', true], ['問題の整合性チェック', true], ['難易度スコア付与', false]],
+    editorHTML: `<div class="q-block">
+      <div class="q-num">大問1　アルゴリズムとプログラミング</div>
+      <p class="q-text">次の疑似コードを読んで、各問いに答えよ。</p>
+      <pre style="background:var(--surface2);padding:10px 12px;border-radius:6px;font-family:monospace;font-size:11px;line-height:1.8;overflow-x:auto;margin:8px 0;">x ← 1
+<span class="highlight-warn">WHILE x &lt; 10 DO</span>
+　　PRINT x
+　　x ← x + 2
+END WHILE</pre>
+      <p class="q-text q-sub">問1. このアルゴリズムが出力する値をすべて答えよ。</p>
+      <p class="q-text q-sub">問2. x の初期値を 0 に変更した場合、出力値はどのように変わるか答えよ。</p>
+    </div>`,
+    panelHTML: `<div class="summary-card"><div class="summary-title">指摘サマリー</div><div class="summary-stats"><div class="stat"><div class="stat-num" style="color:var(--error)">0</div><div class="stat-label">要確認</div></div><div class="stat"><div class="stat-num" style="color:var(--warn)">2</div><div class="stat-label">提案</div></div><div class="stat"><div class="stat-num" style="color:var(--ok)">0</div><div class="stat-label">承認済</div></div></div></div><div class="issue-card warn"><div class="issue-header"><span class="issue-icon">🟡</span><div class="issue-info"><div class="issue-type warn">表記統一の提案 · 大問1</div><div class="issue-desc">疑似コードの WHILE 条件式の書き方を統一</div></div></div><div class="issue-body"><div class="diff-row"><div class="diff-before">WHILE x &lt; 10 DO</div><div class="diff-after">WHILE x ≦ 9 DO</div></div><div class="reason">不等号記号の表記を他の問題と統一するため ≦ の使用を提案します。意味は等価ですが、全体的な表記一貫性のための修正です。</div><div class="issue-actions"><button class="btn-accept">✓ 承認</button><button class="btn-reject">✕ 却下</button></div></div></div>`,
+  },
 };
 
 // ── File Tree Data ────────────────────────────
+const MONTH_SUBJECTS = function(st, qs) {
+  var d = qs || {};
+  return [
+    { label: '国語',          subject: 'japanese',      status: st, q: d.ja  || 0 },
+    { label: '数学',          subject: 'math',          status: st, q: d.ma  || 0 },
+    { label: '英語',          subject: 'english',       status: st, q: d.en  || 0 },
+    { label: '理科（通常回）', subject: 'rika',          status: st, q: d.ri  || 0 },
+    { label: '理科（物理）',  subject: 'physics',       status: st, q: d.ph  || 0 },
+    { label: '理科（化学）',  subject: 'chemistry',     status: st, q: d.ch  || 0 },
+    { label: '理科（生物）',  subject: 'biology',       status: st, q: d.bi  || 0 },
+    { label: '理科（地学）',  subject: 'earth',         status: st, q: d.ea  || 0 },
+    { label: '地歴公民',      subject: 'chirekikomin',  status: st, q: d.ge  || 0 },
+    { label: '情報',          subject: 'joho',          status: st, q: d.jo  || 0 },
+  ];
+};
+
 const FILE_TREE = [
   { label: '進研模試', icon: '📋', open: true, children: [
     { label: '2026年', icon: '📁', open: true, children: [
-      { label: '3月', icon: '📅', open: true, children: [
-        { label: '英語', subject: 'english',  status: 'warn',    q: 24 },
-        { label: '国語', subject: 'japanese', status: 'warn',    q: 20 },
-        { label: '数学', subject: 'math',     status: 'warn',    q: 18 },
-      ]},
-      { label: '1月', icon: '📅', open: false, children: [
-        { label: '英語', subject: 'english',  status: 'done',    q: 22 },
-        { label: '国語', subject: 'japanese', status: 'done',    q: 20 },
-        { label: '数学', subject: 'math',     status: 'done',    q: 16 },
-      ]},
+      { label: '3月', icon: '📅', open: true,  children: MONTH_SUBJECTS('warn',    { ja:20, ma:18, en:24, ri:20, ph:18, ch:18, bi:18, ea:18, ge:25, jo:15 }) },
+      { label: '1月', icon: '📅', open: false, children: MONTH_SUBJECTS('done',    { ja:20, ma:16, en:22, ri:20, ph:18, ch:18, bi:18, ea:18, ge:25, jo:0  }) },
     ]},
     { label: '2025年', icon: '📁', open: false, children: [
-      { label: '11月', icon: '📅', open: false, children: [
-        { label: '英語', subject: 'english',  status: 'done',    q: 24 },
-        { label: '国語', subject: 'japanese', status: 'done',    q: 20 },
-        { label: '数学', subject: 'math',     status: 'done',    q: 18 },
-      ]},
+      { label: '11月', icon: '📅', open: false, children: MONTH_SUBJECTS('done',   { ja:20, ma:18, en:24, ri:20, ph:18, ch:18, bi:18, ea:18, ge:25, jo:0  }) },
     ]},
   ]},
   { label: '全統模試', icon: '📋', open: false, children: [
     { label: '2026年', icon: '📁', open: false, children: [
-      { label: '4月', icon: '📅', open: false, children: [
-        { label: '英語', subject: 'english',  status: 'pending', q: 0 },
-        { label: '国語', subject: 'japanese', status: 'pending', q: 0 },
-        { label: '数学', subject: 'math',     status: 'pending', q: 0 },
-      ]},
+      { label: '4月', icon: '📅', open: false, children: MONTH_SUBJECTS('pending', {}) },
     ]},
   ]},
 ];
@@ -1524,9 +1636,9 @@ function selectSubject(subject, id) {
 
 function buildFileTree() {
   document.getElementById('file-list').innerHTML = renderTree(FILE_TREE, 0, 'n');
-  // 初期アクティブ: 進研模試 > 2026年 > 3月 > 英語
-  activeNodeId = 'n_0_0_0_0';
-  var el = document.getElementById('nd_n_0_0_0_0');
+  // 初期アクティブ: 進研模試 > 2026年 > 3月 > 英語（index 2）
+  activeNodeId = 'n_0_0_0_2';
+  var el = document.getElementById('nd_n_0_0_0_2');
   if (el) el.classList.add('active');
 }
 
