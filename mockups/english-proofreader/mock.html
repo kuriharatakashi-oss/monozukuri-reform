@@ -67,6 +67,39 @@
     border-radius: 20px;
     letter-spacing: 0.05em;
   }
+
+  /* Subject Switch Tabs */
+  .subject-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.1);
+    padding: 4px;
+    border-radius: 8px;
+  }
+  .subject-tab {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .subject-tab:hover {
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+  .subject-tab.active {
+    background: white;
+    color: var(--text);
+    font-weight: 700;
+  }
+
   .header-right {
     display: flex;
     align-items: center;
@@ -511,7 +544,6 @@
   }
   .comment-input:focus { outline: none; border-color: var(--accent); }
 
-  /* Tooltip style for status pill */
   .status-pill {
     display: inline-flex;
     align-items: center;
@@ -549,8 +581,13 @@
 <!-- Header -->
 <div class="header">
   <div class="header-left">
-    <div class="logo">Kozeми <span>英語校正 AI</span></div>
+    <div class="logo">Kozeми <span id="logo-subject">英語校正 AI</span></div>
     <span class="badge">BETA</span>
+  </div>
+  <div class="subject-tabs">
+    <button class="subject-tab active" data-subject="english" onclick="switchSubject('english')">英語</button>
+    <button class="subject-tab" data-subject="japanese" onclick="switchSubject('japanese')">国語</button>
+    <button class="subject-tab" data-subject="math" onclick="switchSubject('math')">数学</button>
   </div>
   <div class="header-right">
     <span class="status-pill pill-done">✓ AI校正完了</span>
@@ -575,43 +612,12 @@
 
     <div class="sidebar-section" style="flex:1;overflow-y:auto;">
       <div class="sidebar-label">対象ファイル</div>
-      <div class="file-list">
-        <div class="file-item active">
-          <span class="file-icon">📄</span>
-          <div class="file-info">
-            <div class="file-name">2025年度_第3回_英語.xlsx</div>
-            <div class="file-meta">設問 24問 · 校正済</div>
-          </div>
-          <div class="file-status status-warn"></div>
-        </div>
-        <div class="file-item">
-          <span class="file-icon">📄</span>
-          <div class="file-info">
-            <div class="file-name">2025年度_第2回_英語.xlsx</div>
-            <div class="file-meta">設問 22問 · 校正済</div>
-          </div>
-          <div class="file-status status-done"></div>
-        </div>
-        <div class="file-item">
-          <span class="file-icon">📄</span>
-          <div class="file-info">
-            <div class="file-name">2025年度_第1回_英語.xlsx</div>
-            <div class="file-meta">設問 20問 · 未校正</div>
-          </div>
-          <div class="file-status status-pending"></div>
-        </div>
-      </div>
+      <div id="file-list" class="file-list"></div>
     </div>
 
     <div class="sidebar-section">
       <div class="sidebar-label">校正オプション</div>
-      <div class="check-options">
-        <label class="check-option"><input type="checkbox" checked> 文法・語法エラー</label>
-        <label class="check-option"><input type="checkbox" checked> スペルミス</label>
-        <label class="check-option"><input type="checkbox" checked> 問題の整合性チェック</label>
-        <label class="check-option"><input type="checkbox"> 難易度スコア付与</label>
-        <label class="check-option"><input type="checkbox"> 類似問題の重複検出</label>
-      </div>
+      <div id="check-options" class="check-options"></div>
     </div>
 
     <button class="run-btn">⚡ AI校正を実行</button>
@@ -622,8 +628,8 @@
     <div class="toolbar">
       <div class="toolbar-left">
         <div>
-          <div class="doc-title">2025年度 第3回 英語設問</div>
-          <div class="doc-meta">24問 · 指摘 7件（要確認 3件、提案 4件）</div>
+          <div id="doc-title" class="doc-title"></div>
+          <div id="doc-meta" class="doc-meta"></div>
         </div>
       </div>
       <div class="toolbar-right">
@@ -633,15 +639,44 @@
       </div>
     </div>
 
-    <div class="editor-area">
+    <div id="editor-area" class="editor-area"></div>
+  </div>
 
-      <!-- Q1 -->
+  <!-- Right Panel -->
+  <div class="panel">
+    <div class="panel-tabs">
+      <div class="panel-tab active">指摘一覧</div>
+      <div class="panel-tab">サマリー</div>
+      <div class="panel-tab">コメント</div>
+    </div>
+    <div id="panel-content" class="panel-content"></div>
+  </div>
+</div>
+
+<script>
+const SUBJECTS = {
+  english: {
+    title: '英語設問 AI校正ツール',
+    logoText: '英語校正 AI',
+    docTitle: '2025年度 第3回 英語設問',
+    docMeta: '24問 · 指摘 7件（要確認 3件、提案 4件）',
+    checkOptions: [
+      ['文法・語法エラー', true],
+      ['スペルミス', true],
+      ['問題の整合性チェック', true],
+      ['難易度スコア付与', false],
+      ['類似問題の重複検出', false],
+    ],
+    fileItems: [
+      ['2025年度_第3回_英語.xlsx', '設問 24問 · 校正済', 'warn', true],
+      ['2025年度_第2回_英語.xlsx', '設問 22問 · 校正済', 'done', false],
+      ['2025年度_第1回_英語.xlsx', '設問 20問 · 未校正', 'pending', false],
+    ],
+    editorHTML: `
       <div class="question-block has-error">
         <div class="q-header">
           <span class="q-num">大問1 · 設問(1)</span>
-          <div class="q-tags">
-            <span class="tag tag-error">⚠ 文法エラー</span>
-          </div>
+          <div class="q-tags"><span class="tag tag-error">⚠ 文法エラー</span></div>
         </div>
         <div class="q-body">
           <div class="q-text">Choose the word that best completes the sentence.
@@ -656,13 +691,10 @@ She has been studying English <span class="highlight-error" title="文法エラ�
         </div>
       </div>
 
-      <!-- Q2 -->
       <div class="question-block has-issue">
         <div class="q-header">
           <span class="q-num">大問1 · 設問(2)</span>
-          <div class="q-tags">
-            <span class="tag tag-warn">提案 2件</span>
-          </div>
+          <div class="q-tags"><span class="tag tag-warn">提案 2件</span></div>
         </div>
         <div class="q-body">
           <div class="q-text">Read the passage and answer the question below.
@@ -677,13 +709,10 @@ Q: What is the main purpose of the new policy?</div>
         </div>
       </div>
 
-      <!-- Q3 Clean -->
       <div class="question-block clean">
         <div class="q-header">
           <span class="q-num">大問1 · 設問(3)</span>
-          <div class="q-tags">
-            <span class="tag tag-ok">✓ 問題なし</span>
-          </div>
+          <div class="q-tags"><span class="tag tag-ok">✓ 問題なし</span></div>
         </div>
         <div class="q-body">
           <div class="q-text">Choose the most appropriate response.
@@ -701,13 +730,10 @@ B: _______________
         </div>
       </div>
 
-      <!-- Q4 -->
       <div class="question-block has-issue">
         <div class="q-header">
           <span class="q-num">大問2 · 設問(1)</span>
-          <div class="q-tags">
-            <span class="tag tag-info">整合性の確認</span>
-          </div>
+          <div class="q-tags"><span class="tag tag-info">整合性の確認</span></div>
         </div>
         <div class="q-body">
           <div class="q-text">Read the following email and answer questions (1)–(3).
@@ -724,46 +750,20 @@ Q(3): What date is requested?</div>
           <span class="issue-count">1件の指摘（問題文とQ設定の確認）</span>
           <button class="accept-all">すべて承認</button>
         </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Right Panel -->
-  <div class="panel">
-    <div class="panel-tabs">
-      <div class="panel-tab active">指摘一覧</div>
-      <div class="panel-tab">サマリー</div>
-      <div class="panel-tab">コメント</div>
-    </div>
-    <div class="panel-content">
-
-      <!-- Summary Card -->
+      </div>`,
+    panelHTML: `
       <div class="summary-card">
         <div class="summary-title">校正結果サマリー</div>
         <div class="summary-stats">
-          <div class="stat-item stat-error">
-            <div class="stat-num">3</div>
-            <div class="stat-label">要修正</div>
-          </div>
-          <div class="stat-item stat-warn">
-            <div class="stat-num">4</div>
-            <div class="stat-label">提案</div>
-          </div>
-          <div class="stat-item stat-ok">
-            <div class="stat-num">17</div>
-            <div class="stat-label">問題なし</div>
-          </div>
-          <div class="stat-item stat-total">
-            <div class="stat-num">24</div>
-            <div class="stat-label">設問合計</div>
-          </div>
+          <div class="stat-item stat-error"><div class="stat-num">3</div><div class="stat-label">要修正</div></div>
+          <div class="stat-item stat-warn"><div class="stat-num">4</div><div class="stat-label">提案</div></div>
+          <div class="stat-item stat-ok"><div class="stat-num">17</div><div class="stat-label">問題なし</div></div>
+          <div class="stat-item stat-total"><div class="stat-num">24</div><div class="stat-label">設問合計</div></div>
         </div>
         <div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div>
         <div class="progress-label">承認済 3 / 7件</div>
       </div>
 
-      <!-- Issue 1 -->
       <div class="issue-card selected">
         <div class="issue-head">
           <span class="issue-icon">🔴</span>
@@ -779,9 +779,7 @@ Q(3): What date is requested?</div>
             <div class="diff-label">修正案</div>
             <div class="diff-after">for three years</div>
           </div>
-          <div class="reason">
-            「since」は起点（"since 2020"）に使い、「for」は継続期間（"for three years"）に使います。数値＋期間の場合は「for」が正しい用法です。
-          </div>
+          <div class="reason">「since」は起点（"since 2020"）に使い、「for」は継続期間（"for three years"）に使います。数値＋期間の場合は「for」が正しい用法です。</div>
           <div class="issue-actions">
             <button class="btn-accept">✓ 承認</button>
             <button class="btn-reject">✕ 却下</button>
@@ -789,7 +787,6 @@ Q(3): What date is requested?</div>
         </div>
       </div>
 
-      <!-- Issue 2 -->
       <div class="issue-card">
         <div class="issue-head">
           <span class="issue-icon">🟠</span>
@@ -803,9 +800,7 @@ Q(3): What date is requested?</div>
             <div class="diff-before">effect all students</div>
             <div class="diff-after">affect all students</div>
           </div>
-          <div class="reason">
-            「effect」は名詞（効果）または「もたらす」の他動詞。「影響を与える」には動詞「affect」が適切です。
-          </div>
+          <div class="reason">「effect」は名詞（効果）または「もたらす」の他動詞。「影響を与える」には動詞「affect」が適切です。</div>
           <div class="issue-actions">
             <button class="btn-accept">✓ 承認</button>
             <button class="btn-reject">✕ 却下</button>
@@ -813,7 +808,6 @@ Q(3): What date is requested?</div>
         </div>
       </div>
 
-      <!-- Issue 3 -->
       <div class="issue-card">
         <div class="issue-head">
           <span class="issue-icon">🟠</span>
@@ -827,9 +821,7 @@ Q(3): What date is requested?</div>
             <div class="diff-before">make better the learning environment</div>
             <div class="diff-after">improve the learning environment</div>
           </div>
-          <div class="reason">
-            "make better" は文法的には可能ですが不自然。"improve" がより自然で簡潔な表現です。
-          </div>
+          <div class="reason">"make better" は文法的には可能ですが不自然。"improve" がより自然で簡潔な表現です。</div>
           <div class="issue-actions">
             <button class="btn-accept">✓ 承認</button>
             <button class="btn-reject">✕ 却下</button>
@@ -837,7 +829,6 @@ Q(3): What date is requested?</div>
         </div>
       </div>
 
-      <!-- Issue 4 -->
       <div class="issue-card">
         <div class="issue-head">
           <span class="issue-icon">🔵</span>
@@ -851,9 +842,138 @@ Q(3): What date is requested?</div>
             <div class="diff-before">writing to inquiry about</div>
             <div class="diff-after">writing to inquire about</div>
           </div>
-          <div class="reason">
-            "inquiry" は名詞。"to" の後には動詞原形が必要なため "inquire" が正しい形です。
+          <div class="reason">"inquiry" は名詞。"to" の後には動詞原形が必要なため "inquire" が正しい形です。</div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
           </div>
+        </div>
+      </div>`,
+  },
+
+  japanese: {
+    title: '国語設問 AI校正',
+    logoText: '国語校正 AI',
+    docTitle: '2025年度 第3回 国語設問',
+    docMeta: '20問 · 指摘 5件（要確認 2件、提案 3件）',
+    checkOptions: [
+      ['漢字・表記チェック', true],
+      ['文法・語法チェック', true],
+      ['問題の整合性チェック', true],
+      ['難易度スコア付与', false],
+      ['類似問題の重複検出', false],
+    ],
+    fileItems: [
+      ['2025年度_第3回_国語.xlsx', '設問 20問 · 校正済', 'warn', true],
+      ['2025年度_第2回_国語.xlsx', '設問 18問 · 校正済', 'done', false],
+      ['2025年度_第1回_国語.xlsx', '設問 18問 · 未校正', 'pending', false],
+    ],
+    editorHTML: `
+      <div class="question-block has-error">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(1)</span>
+          <div class="q-tags"><span class="tag tag-error">⚠ 漢字誤用</span></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">次の文を読み、下線部の漢字として正しいものをあとの①〜④から選べ。
+
+市の文化祭では、地域住民が制作した作品が一堂に会し、
+多くの来場者の目を楽しませた。なかでも中学生たちの
+作品は審査員から高く<span class="highlight-error" title="漢字誤用">評化</span>された。
+
+① 評価　② 評化　③ 表価　④ 評果</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">1件の指摘</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>
+
+      <div class="question-block has-issue">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(2)</span>
+          <div class="q-tags"><span class="tag tag-warn">文法エラー</span></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">次の文章を読んで、あとの問いに答えよ。
+
+春になると、校庭の桜が満開に咲き、生徒たちは
+その美しさに<span class="highlight-warn" title="敬体・常体の混在">見とれる</span>。先生も生徒も、みんなが
+春の訪れをとても楽しみに<span class="highlight-warn" title="敬体・常体の混在">していました</span>。
+
+問：この文章の構成上の問題点を指摘しなさい。</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">2件の指摘</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>
+
+      <div class="question-block clean">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(3)</span>
+          <div class="q-tags"><span class="tag tag-ok">✓ 問題なし</span></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">次の俳句の季語を答え、その季節を記しなさい。
+
+　　古池や　蛙飛びこむ　水の音
+
+　　　　　　　　　　　　　　（松尾芭蕉）</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">指摘なし</span>
+        </div>
+      </div>
+
+      <div class="question-block has-issue">
+        <div class="q-header">
+          <span class="q-num">大問2 · 設問(1)</span>
+          <div class="q-tags"><span class="tag tag-warn">表現の不自然さ</span></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">次の文の（　　）に入る最も適切な語句を選べ。
+
+彼は長年の努力の（　　）、ついに夢を<span class="highlight-warn" title="表現の不自然さ">実現させた</span>。
+
+① 結果として　② 成果として　③ 甲斐あって　④ 果てに
+
+問：傍線部の表現の適否についても検討せよ。</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">1件の指摘</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>`,
+    panelHTML: `
+      <div class="summary-card">
+        <div class="summary-title">校正結果サマリー</div>
+        <div class="summary-stats">
+          <div class="stat-item stat-error"><div class="stat-num">2</div><div class="stat-label">要修正</div></div>
+          <div class="stat-item stat-warn"><div class="stat-num">3</div><div class="stat-label">提案</div></div>
+          <div class="stat-item stat-ok"><div class="stat-num">15</div><div class="stat-label">問題なし</div></div>
+          <div class="stat-item stat-total"><div class="stat-num">20</div><div class="stat-label">設問合計</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+        <div class="progress-label">承認済 2 / 5件</div>
+      </div>
+
+      <div class="issue-card selected">
+        <div class="issue-head">
+          <span class="issue-icon">🔴</span>
+          <div class="issue-info">
+            <div class="issue-type error">漢字誤用 · 大問1(1)</div>
+            <div class="issue-desc">同音異義語による漢字の誤用</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-label">修正前</div>
+            <div class="diff-before">評化</div>
+            <div class="diff-label">修正案</div>
+            <div class="diff-after">評価</div>
+          </div>
+          <div class="reason">「評化」という漢字表記は存在しない。「ひょうか」の正しい漢字表記は「評価」です。選択肢②に誤字が含まれています。</div>
           <div class="issue-actions">
             <button class="btn-accept">✓ 承認</button>
             <button class="btn-reject">✕ 却下</button>
@@ -861,9 +981,268 @@ Q(3): What date is requested?</div>
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
+      <div class="issue-card">
+        <div class="issue-head">
+          <span class="issue-icon">🟠</span>
+          <div class="issue-info">
+            <div class="issue-type warn">文法エラー · 大問1(2)</div>
+            <div class="issue-desc">敬体・常体の混在（文体の不統一）</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-label">修正前</div>
+            <div class="diff-before">見とれる。…していました。</div>
+            <div class="diff-label">修正案</div>
+            <div class="diff-after">見とれていました。…していました。</div>
+          </div>
+          <div class="reason">同一文章内で常体（「見とれる」）と敬体（「していました」）が混在しています。文体は一方に統一する必要があります。</div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-head">
+          <span class="issue-icon">🟠</span>
+          <div class="issue-info">
+            <div class="issue-type warn">表現の不自然さ · 大問2(1)</div>
+            <div class="issue-desc">使役表現の不適切な使用</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-before">夢を実現させた</div>
+            <div class="diff-after">夢を実現した</div>
+          </div>
+          <div class="reason">「実現させた」は使役の意味合いが強く、自分自身の夢について語る文脈では「実現した」が自然な表現です。</div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>`,
+  },
+
+  math: {
+    title: '数学設問 AI校正',
+    logoText: '数学校正 AI',
+    docTitle: '2025年度 第3回 数学設問',
+    docMeta: '18問 · 指摘 4件（要確認 2件、提案 2件）',
+    checkOptions: [
+      ['数式・計算チェック', true],
+      ['単位・条件チェック', true],
+      ['問題の整合性チェック', true],
+      ['難易度スコア付与', false],
+      ['類似問題の重複検出', false],
+    ],
+    fileItems: [
+      ['2025年度_第3回_数学.xlsx', '設問 18問 · 校正済', 'warn', true],
+      ['2025年度_第2回_数学.xlsx', '設問 16問 · 校正済', 'done', false],
+      ['2025年度_第1回_数学.xlsx', '設問 15問 · 未校正', 'pending', false],
+    ],
+    editorHTML: `
+      <div class="question-block has-error">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(1)</span>
+          <div class="q-tags"><span class="tag tag-error">⚠ 数式の誤り</span></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">次の定理の説明として正しいものを選べ。
+
+直角三角形において、斜辺の長さを c、他の2辺を
+a、b とするとき、ピタゴラスの定理は次の式で表される。
+
+　　<span class="highlight-error" title="数式の誤り">a² + b² = c</span>
+
+この式を用いて、a = 3、b = 4 のとき c を求めなさい。
+
+① 5　② 7　③ 25　④ 12</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">1件の指摘</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>
+
+      <div class="question-block has-issue">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(2)</span>
+          <div class="q-tags"><span class="tag tag-warn">単位の誤り</span></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">次の問題の解答として正しいものを選べ。
+
+縦 5m、横 8m の長方形の土地がある。
+この土地の面積を求めなさい。
+
+【解答例】
+面積 = 5 × 8 = <span class="highlight-warn" title="単位の誤り">40m³</span>
+
+① 40m　② 40m²　③ 40m³　④ 13m</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">1件の指摘</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>
+
+      <div class="question-block clean">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(3)</span>
+          <div class="q-tags"><span class="tag tag-ok">✓ 問題なし</span></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">次の二次方程式を因数分解を用いて解きなさい。
+
+　　x² − 5x + 6 = 0
+
+（ヒント）
+ax² + bx + c = 0 を (x − p)(x − q) = 0 の形に変形せよ。</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">指摘なし</span>
+        </div>
+      </div>
+
+      <div class="question-block has-issue">
+        <div class="q-header">
+          <span class="q-num">大問2 · 設問(1)</span>
+          <div class="q-tags"><span class="tag tag-info">解答条件の不備</span></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">次の問いに答えなさい。
+
+ある<span class="highlight-warn" title="解答条件の不備">整数 n</span> について、
+n² − n − 6 = 0 を満たす値をすべて求めよ。
+
+（解答欄）
+n² − n − 6 = 0
+(n − 3)(n + 2) = 0
+∴ n = 3、n = −2
+
+問：答えが複数存在する場合、解答範囲の条件が不明確になります。</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">1件の指摘（解答条件の確認）</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>`,
+    panelHTML: `
+      <div class="summary-card">
+        <div class="summary-title">校正結果サマリー</div>
+        <div class="summary-stats">
+          <div class="stat-item stat-error"><div class="stat-num">2</div><div class="stat-label">要修正</div></div>
+          <div class="stat-item stat-warn"><div class="stat-num">2</div><div class="stat-label">提案</div></div>
+          <div class="stat-item stat-ok"><div class="stat-num">14</div><div class="stat-label">問題なし</div></div>
+          <div class="stat-item stat-total"><div class="stat-num">18</div><div class="stat-label">設問合計</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+        <div class="progress-label">承認済 1 / 4件</div>
+      </div>
+
+      <div class="issue-card selected">
+        <div class="issue-head">
+          <span class="issue-icon">🔴</span>
+          <div class="issue-info">
+            <div class="issue-type error">数式の誤り · 大問1(1)</div>
+            <div class="issue-desc">ピタゴラスの定理の記述に誤り</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-label">修正前</div>
+            <div class="diff-before">a² + b² = c</div>
+            <div class="diff-label">修正案</div>
+            <div class="diff-after">a² + b² = c²</div>
+          </div>
+          <div class="reason">ピタゴラスの定理は a² + b² = c²（両辺とも二乗）。設問内の式に「²」が脱落しており、定理として成立しません。</div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-head">
+          <span class="issue-icon">🟠</span>
+          <div class="issue-info">
+            <div class="issue-type warn">単位の誤り · 大問1(2)</div>
+            <div class="issue-desc">面積の単位が体積単位になっている</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-before">40m³</div>
+            <div class="diff-after">40m²</div>
+          </div>
+          <div class="reason">面積（縦×横）の単位は m²（平方メートル）が正しい。m³は体積の単位であり、解答例の単位が誤っています。</div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="issue-card">
+        <div class="issue-head">
+          <span class="issue-icon">🔵</span>
+          <div class="issue-info">
+            <div class="issue-type info">解答条件の不備 · 大問2(1)</div>
+            <div class="issue-desc">解の範囲・制約条件の記述が不足</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-before">整数 n について…n = 3、n = −2</div>
+            <div class="diff-after">自然数 n について…n = 3（n = −2 は不適）</div>
+          </div>
+          <div class="reason">「整数」と指定すると n = 3 と n = −2 の両方が解となる。問題の意図が「自然数」や「正の整数」であれば、条件を明示する必要があります。</div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>`,
+  },
+};
+
+function switchSubject(subject) {
+  const data = SUBJECTS[subject];
+
+  document.title = data.title;
+  document.getElementById('logo-subject').textContent = data.logoText;
+  document.getElementById('doc-title').textContent = data.docTitle;
+  document.getElementById('doc-meta').textContent = data.docMeta;
+
+  document.getElementById('file-list').innerHTML = data.fileItems.map(function(f) {
+    return '<div class="file-item' + (f[3] ? ' active' : '') + '">' +
+      '<span class="file-icon">📄</span>' +
+      '<div class="file-info">' +
+        '<div class="file-name">' + f[0] + '</div>' +
+        '<div class="file-meta">' + f[1] + '</div>' +
+      '</div>' +
+      '<div class="file-status status-' + f[2] + '"></div>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('check-options').innerHTML = data.checkOptions.map(function(o) {
+    return '<label class="check-option"><input type="checkbox"' + (o[1] ? ' checked' : '') + '> ' + o[0] + '</label>';
+  }).join('');
+
+  document.getElementById('editor-area').innerHTML = data.editorHTML;
+  document.getElementById('panel-content').innerHTML = data.panelHTML;
+
+  document.querySelectorAll('.subject-tab').forEach(function(tab) {
+    tab.classList.toggle('active', tab.dataset.subject === subject);
+  });
+}
+
+switchSubject('english');
+</script>
 
 </body>
 </html>
