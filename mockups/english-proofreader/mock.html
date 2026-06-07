@@ -68,37 +68,7 @@
     letter-spacing: 0.05em;
   }
 
-  /* Subject Switch Tabs */
-  .subject-tabs {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: rgba(255,255,255,0.1);
-    padding: 4px;
-    border-radius: 8px;
-  }
-  .subject-tab {
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.6);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 5px 18px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-    letter-spacing: 0.03em;
-  }
-  .subject-tab:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
-  }
-  .subject-tab.active {
-    background: white;
-    color: var(--text);
-    font-weight: 700;
-  }
+
 
   .header-right {
     display: flex;
@@ -810,11 +780,7 @@
     <div class="logo">Kozeми <span id="logo-subject">英語校正 AI</span></div>
     <span class="badge">BETA</span>
   </div>
-  <div class="subject-tabs">
-    <button class="subject-tab active" data-subject="english" onclick="switchSubject('english')">英語</button>
-    <button class="subject-tab" data-subject="japanese" onclick="switchSubject('japanese')">国語</button>
-    <button class="subject-tab" data-subject="math" onclick="switchSubject('math')">数学</button>
-  </div>
+
   <div class="header-right">
     <span class="status-pill pill-done">✓ AI校正完了</span>
     <div class="user-chip">
@@ -1872,9 +1838,6 @@ function switchSubject(subject) {
     document.getElementById('preview-pane').innerHTML = getPreviewHTML(subject);
   }
 
-  document.querySelectorAll('.subject-tab').forEach(function(tab) {
-    tab.classList.toggle('active', tab.dataset.subject === subject);
-  });
 }
 
 buildFileTree();
