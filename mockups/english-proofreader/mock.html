@@ -574,6 +574,174 @@
     border-top: 1px solid var(--border);
     margin-top: 4px;
   }
+
+  /* 4タブ対応：パネルタブを小さく */
+  .panel-tabs .panel-tab {
+    padding: 10px 5px;
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+
+  /* Preview Pane */
+  .preview-pane {
+    flex: 1;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    background: #E0DDD6;
+  }
+  .preview-toolbar {
+    padding: 9px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .preview-info { display: flex; align-items: center; gap: 8px; }
+  .preview-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+  }
+  .preview-approved-count {
+    font-size: 10px;
+    color: var(--ok);
+    font-weight: 600;
+    background: var(--ok-light);
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+  .print-btn {
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 11px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+  }
+  .print-btn:hover { background: #3A3835; }
+
+  .preview-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  /* A4 Paper */
+  .a4-paper {
+    background: white;
+    width: 100%;
+    min-height: 390px;
+    box-shadow: 0 3px 18px rgba(0,0,0,0.18);
+    padding: 28px 24px 36px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 9px;
+    line-height: 1.75;
+    color: #1a1916;
+  }
+  .a4-doc-header { text-align: center; margin-bottom: 10px; }
+  .a4-org { font-size: 8px; color: #999; margin-bottom: 2px; letter-spacing: 0.04em; }
+  .a4-title { font-size: 15px; font-weight: 700; letter-spacing: 0.18em; color: #111; margin-bottom: 5px; }
+  .a4-meta { font-size: 8px; color: #666; display: flex; justify-content: center; gap: 24px; }
+  .a4-rule { border: none; border-top: 2px solid #111; margin: 8px 0 14px; }
+
+  .a4-section { margin-bottom: 16px; }
+  .a4-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+    color: #111;
+  }
+  .a4-question { display: flex; gap: 6px; margin-bottom: 11px; }
+  .a4-q-label {
+    font-size: 8px;
+    font-weight: 600;
+    color: #888;
+    flex-shrink: 0;
+    padding-top: 1px;
+    width: 44px;
+  }
+  .a4-q-body { flex: 1; font-size: 9px; line-height: 1.7; color: #1a1916; }
+  .a4-q-instruction { margin-bottom: 4px; color: #555; font-size: 8.5px; }
+  .a4-q-passage { margin: 4px 0; line-height: 1.75; }
+  .a4-q-choices { font-size: 8.5px; color: #333; margin-top: 5px; line-height: 1.9; }
+  .a4-q-sub { font-size: 8.5px; color: #444; margin-top: 3px; }
+  .a4-email {
+    border: 1px solid #ddd;
+    background: #fafafa;
+    padding: 7px 9px;
+    margin: 5px 0;
+    font-size: 8px;
+    line-height: 1.65;
+    color: #333;
+  }
+  .a4-blank {
+    display: inline-block;
+    border-bottom: 1px solid #555;
+    min-width: 64px;
+    margin: 0 2px;
+    vertical-align: bottom;
+  }
+
+  /* Correction states */
+  .cor-done {
+    background: #E8F7EE;
+    border-bottom: 1.5px solid #1A7A4A;
+    padding: 0 2px;
+    color: #0E5C33;
+    font-weight: 700;
+    border-radius: 1px;
+  }
+  .cor-pending {
+    border-bottom: 1.5px dashed #D4700A;
+    padding: 0 1px;
+    color: #111;
+  }
+
+  /* Legend */
+  .preview-legend {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--text-sub);
+  }
+  .legend-swatch { width: 16px; height: 3px; border-radius: 1px; }
+  .legend-swatch.done { background: #1A7A4A; }
+  .legend-swatch.pending { background: #D4700A; }
+
+  @media print {
+    .header, .sidebar, .main, .panel-tabs, .preview-toolbar { display: none !important; }
+    .app { display: block; height: auto; }
+    .panel { border: none; width: 100%; }
+    .preview-pane { display: block !important; background: white; }
+    .preview-scroll { padding: 0; overflow: visible; }
+    .a4-paper { box-shadow: none; padding: 0; }
+  }
 </style>
 </head>
 <body>
@@ -645,11 +813,13 @@
   <!-- Right Panel -->
   <div class="panel">
     <div class="panel-tabs">
-      <div class="panel-tab active">指摘一覧</div>
-      <div class="panel-tab">サマリー</div>
-      <div class="panel-tab">コメント</div>
+      <div class="panel-tab active" onclick="switchPanelTab(0)">指摘一覧</div>
+      <div class="panel-tab" onclick="switchPanelTab(1)">サマリー</div>
+      <div class="panel-tab" onclick="switchPanelTab(2)">コメント</div>
+      <div class="panel-tab" onclick="switchPanelTab(3)">プレビュー</div>
     </div>
     <div id="panel-content" class="panel-content"></div>
+    <div id="preview-pane" class="preview-pane"></div>
   </div>
 </div>
 
@@ -1210,7 +1380,217 @@ n² − n − 6 = 0
   },
 };
 
+let currentSubject = 'english';
+let currentPanelTab = 0;
+
+function getPreviewHTML(subject) {
+  var previews = {
+    english: `
+      <div class="preview-toolbar">
+        <div class="preview-info">
+          <span class="preview-badge">校正後プレビュー</span>
+          <span class="preview-approved-count">✓ 1件 反映済み</span>
+        </div>
+        <button class="print-btn" onclick="window.print()">🖨 印刷</button>
+      </div>
+      <div class="preview-scroll">
+        <div class="a4-paper">
+          <div class="a4-doc-header">
+            <div class="a4-org">○○学校　2025年度 第3回</div>
+            <div class="a4-title">英　語</div>
+            <div class="a4-meta"><span>試験時間：50分</span><span>満点：100点</span></div>
+          </div>
+          <hr class="a4-rule">
+          <div class="a4-section">
+            <div class="a4-section-title">大問 1</div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (1)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">Choose the word that best completes the sentence.</div>
+                <div class="a4-q-passage">She has been studying English <span class="cor-done">for three years</span>, and her skills have improved significantly.</div>
+                <div class="a4-q-choices">① since　② for　③ during　④ while</div>
+              </div>
+            </div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (2)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">Read the passage and answer the question below.</div>
+                <div class="a4-q-passage">The new policy will <span class="cor-pending">affect</span> all students starting next semester. The changes are designed to <span class="cor-pending">improve</span> the learning environment.</div>
+                <div class="a4-q-sub">Q: What is the main purpose of the new policy?</div>
+              </div>
+            </div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (3)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">Choose the most appropriate response.</div>
+                <div class="a4-q-passage">A: "Have you finished the assignment?"<br>B: <span class="a4-blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+                <div class="a4-q-choices">① "Yes, I finished it yesterday."　② "No, I will finish it yesterday."<br>③ "Yes, I am finishing it yesterday."　④ "No, I haven't finished it yet."</div>
+              </div>
+            </div>
+          </div>
+          <div class="a4-section">
+            <div class="a4-section-title">大問 2</div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (1)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">Read the following email and answer questions (1)–(3).</div>
+                <div class="a4-email">Dear Mr. Johnson,<br><br>I am writing to <span class="cor-pending">inquire</span> about the availability of the conference room on March 15th. Our team would like to hold a meeting from 2:00 PM to 5:00 PM. Could you please let us know if the room is available?</div>
+                <div class="a4-q-sub">Q(1): What is the main purpose of this email?</div>
+                <div class="a4-q-sub">Q(2): What time does the meeting start?</div>
+                <div class="a4-q-sub">Q(3): What date is requested?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-legend">
+          <div class="legend-item"><div class="legend-swatch done"></div>承認済み修正</div>
+          <div class="legend-item"><div class="legend-swatch pending"></div>承認待ち修正</div>
+        </div>
+      </div>`,
+    japanese: `
+      <div class="preview-toolbar">
+        <div class="preview-info">
+          <span class="preview-badge">校正後プレビュー</span>
+          <span class="preview-approved-count">✓ 1件 反映済み</span>
+        </div>
+        <button class="print-btn" onclick="window.print()">🖨 印刷</button>
+      </div>
+      <div class="preview-scroll">
+        <div class="a4-paper">
+          <div class="a4-doc-header">
+            <div class="a4-org">○○学校　2025年度 第3回</div>
+            <div class="a4-title">国　語</div>
+            <div class="a4-meta"><span>試験時間：50分</span><span>満点：100点</span></div>
+          </div>
+          <hr class="a4-rule">
+          <div class="a4-section">
+            <div class="a4-section-title">大問 1</div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (1)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">次の文を読み、下線部の漢字として正しいものをあとの①〜④から選べ。</div>
+                <div class="a4-q-passage">市の文化祭では、地域住民が制作した作品が一堂に会し、多くの来場者の目を楽しませた。なかでも中学生たちの作品は審査員から高く<span class="cor-done">評価</span>された。</div>
+                <div class="a4-q-choices">① 評価　② 評化　③ 表価　④ 評果</div>
+              </div>
+            </div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (2)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">次の文章を読んで、あとの問いに答えよ。</div>
+                <div class="a4-q-passage">春になると、校庭の桜が満開に咲き、生徒たちはその美しさに<span class="cor-pending">見とれていました</span>。先生も生徒も、みんなが春の訪れをとても楽しみにしていました。</div>
+                <div class="a4-q-sub">問：この文章の構成上の問題点を指摘しなさい。</div>
+              </div>
+            </div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (3)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">次の俳句の季語を答え、その季節を記しなさい。</div>
+                <div class="a4-q-passage" style="text-align:center;letter-spacing:0.12em;padding:5px 0;">古池や　蛙飛びこむ　水の音</div>
+                <div class="a4-q-sub" style="text-align:right;font-size:8px;color:#999;">（松尾芭蕉）</div>
+              </div>
+            </div>
+          </div>
+          <div class="a4-section">
+            <div class="a4-section-title">大問 2</div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (1)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">次の文の（　　）に入る最も適切な語句を選べ。</div>
+                <div class="a4-q-passage">彼は長年の努力の（　　）、ついに夢を<span class="cor-pending">実現した</span>。</div>
+                <div class="a4-q-choices">① 結果として　② 成果として　③ 甲斐あって　④ 果てに</div>
+                <div class="a4-q-sub">問：傍線部の表現の適否についても検討せよ。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-legend">
+          <div class="legend-item"><div class="legend-swatch done"></div>承認済み修正</div>
+          <div class="legend-item"><div class="legend-swatch pending"></div>承認待ち修正</div>
+        </div>
+      </div>`,
+    math: `
+      <div class="preview-toolbar">
+        <div class="preview-info">
+          <span class="preview-badge">校正後プレビュー</span>
+          <span class="preview-approved-count">✓ 1件 反映済み</span>
+        </div>
+        <button class="print-btn" onclick="window.print()">🖨 印刷</button>
+      </div>
+      <div class="preview-scroll">
+        <div class="a4-paper">
+          <div class="a4-doc-header">
+            <div class="a4-org">○○学校　2025年度 第3回</div>
+            <div class="a4-title">数　学</div>
+            <div class="a4-meta"><span>試験時間：50分</span><span>満点：100点</span></div>
+          </div>
+          <hr class="a4-rule">
+          <div class="a4-section">
+            <div class="a4-section-title">大問 1</div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (1)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">次の定理の説明として正しいものを選べ。</div>
+                <div class="a4-q-passage">直角三角形において、斜辺の長さを c、他の2辺を a、b とするとき、ピタゴラスの定理は次の式で表される。<br><span style="display:block;text-align:center;margin:5px 0;font-weight:700;letter-spacing:0.06em;"><span class="cor-done">a² + b² = c²</span></span>この式を用いて、a = 3、b = 4 のとき c を求めなさい。</div>
+                <div class="a4-q-choices">① 5　② 7　③ 25　④ 12</div>
+              </div>
+            </div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (2)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">次の問題の解答として正しいものを選べ。</div>
+                <div class="a4-q-passage">縦 5m、横 8m の長方形の土地がある。この土地の面積を求めなさい。<br>【解答例】面積 = 5 × 8 = <span class="cor-pending">40m²</span></div>
+                <div class="a4-q-choices">① 40m　② 40m²　③ 40m³　④ 13m</div>
+              </div>
+            </div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (3)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">次の二次方程式を因数分解を用いて解きなさい。</div>
+                <div class="a4-q-passage" style="text-align:center;margin:5px 0;letter-spacing:0.08em;">x² − 5x + 6 = 0</div>
+                <div class="a4-q-sub">（ヒント）ax² + bx + c = 0 を (x − p)(x − q) = 0 の形に変形せよ。</div>
+              </div>
+            </div>
+          </div>
+          <div class="a4-section">
+            <div class="a4-section-title">大問 2</div>
+            <div class="a4-question">
+              <div class="a4-q-label">設問 (1)</div>
+              <div class="a4-q-body">
+                <div class="a4-q-instruction">次の問いに答えなさい。</div>
+                <div class="a4-q-passage">ある<span class="cor-pending">自然数 n</span> について、n² − n − 6 = 0 を満たす値をすべて求めよ。</div>
+                <div class="a4-q-sub" style="margin-top:5px;padding:5px 6px;border:1px solid #ddd;background:#fafafa;font-size:8px;line-height:1.8;">n² − n − 6 = 0<br>(n − 3)(n + 2) = 0<br>∴ n = 3（n = −2 は不適）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-legend">
+          <div class="legend-item"><div class="legend-swatch done"></div>承認済み修正</div>
+          <div class="legend-item"><div class="legend-swatch pending"></div>承認待ち修正</div>
+        </div>
+      </div>`,
+  };
+  return previews[subject] || '';
+}
+
+function switchPanelTab(idx) {
+  currentPanelTab = idx;
+  document.querySelectorAll('.panel-tab').forEach(function(t, i) {
+    t.classList.toggle('active', i === idx);
+  });
+  var panelContent = document.getElementById('panel-content');
+  var previewPane = document.getElementById('preview-pane');
+  if (idx === 3) {
+    panelContent.style.display = 'none';
+    previewPane.style.display = 'flex';
+    previewPane.innerHTML = getPreviewHTML(currentSubject);
+  } else {
+    panelContent.style.display = '';
+    previewPane.style.display = 'none';
+  }
+}
+
 function switchSubject(subject) {
+  currentSubject = subject;
   const data = SUBJECTS[subject];
 
   document.title = data.title;
@@ -1235,6 +1615,10 @@ function switchSubject(subject) {
 
   document.getElementById('editor-area').innerHTML = data.editorHTML;
   document.getElementById('panel-content').innerHTML = data.panelHTML;
+
+  if (currentPanelTab === 3) {
+    document.getElementById('preview-pane').innerHTML = getPreviewHTML(subject);
+  }
 
   document.querySelectorAll('.subject-tab').forEach(function(tab) {
     tab.classList.toggle('active', tab.dataset.subject === subject);
