@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英語設問 AI校正ツール</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #F5F4F0;
+    --surface: #FFFFFF;
+    --surface2: #F0EEE8;
+    --border: #DDD9CE;
+    --text: #1A1916;
+    --text-sub: #6B6860;
+    --accent: #1B4FD8;
+    --accent-light: #EBF0FF;
+    --warn: #D4700A;
+    --warn-light: #FFF4E5;
+    --ok: #1A7A4A;
+    --ok-light: #E8F7EE;
+    --error: #C02B2B;
+    --error-light: #FDEAEA;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--text);
+    color: white;
+    padding: 0 24px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .logo span {
+    color: #6EC4FF;
+  }
+  .badge {
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: #AAA;
+  }
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .avatar {
+    width: 26px;
+    height: 26px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+  }
+
+  /* Layout */
+  .app {
+    display: grid;
+    grid-template-columns: 260px 1fr 320px;
+    grid-template-rows: 1fr;
+    height: calc(100vh - 52px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+    margin-bottom: 10px;
+  }
+  .upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg);
+  }
+  .upload-area:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .upload-icon { font-size: 22px; margin-bottom: 6px; }
+  .upload-text { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+  .upload-text strong { color: var(--accent); }
+
+  .file-list { display: flex; flex-direction: column; gap: 4px; }
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+  }
+  .file-item:hover { background: var(--surface2); }
+  .file-item.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+  }
+  .file-icon { font-size: 16px; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-meta { font-size: 10px; color: var(--text-sub); }
+  .file-status {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-done { background: var(--ok); }
+  .status-warn { background: var(--warn); }
+  .status-pending { background: var(--border); }
+
+  .check-options { display: flex; flex-direction: column; gap: 8px; }
+  .check-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .check-option input { accent-color: var(--accent); width: 14px; height: 14px; }
+
+  .run-btn {
+    margin: 16px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .run-btn:hover { background: #1540B0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(27,79,216,0.3); }
+
+  /* Main Editor */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .toolbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .toolbar-left { display: flex; align-items: center; gap: 12px; }
+  .doc-title { font-size: 14px; font-weight: 600; }
+  .doc-meta { font-size: 11px; color: var(--text-sub); }
+  .toolbar-right { display: flex; align-items: center; gap: 8px; }
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-primary {
+    background: var(--ok);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+  }
+  .btn-primary:hover { background: #145C38; }
+
+  .editor-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .question-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .question-block:hover { box-shadow: var(--shadow); }
+  .question-block.has-issue { border-left: 3px solid var(--warn); }
+  .question-block.has-error { border-left: 3px solid var(--error); }
+  .question-block.clean { border-left: 3px solid var(--ok); }
+
+  .q-header {
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .q-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-sub);
+  }
+  .q-tags { display: flex; gap: 4px; }
+  .tag {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .tag-warn { background: var(--warn-light); color: var(--warn); }
+  .tag-error { background: var(--error-light); color: var(--error); }
+  .tag-ok { background: var(--ok-light); color: var(--ok); }
+  .tag-info { background: var(--accent-light); color: var(--accent); }
+
+  .q-body { padding: 16px; }
+  .q-text {
+    font-size: 13px;
+    line-height: 1.8;
+    font-family: 'IBM Plex Mono', monospace;
+    white-space: pre-wrap;
+  }
+  .highlight-warn {
+    background: var(--warn-light);
+    border-bottom: 2px solid var(--warn);
+    cursor: pointer;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+  .highlight-warn:hover { background: #FFE8C0; }
+  .highlight-error {
+    background: var(--error-light);
+    border-bottom: 2px solid var(--error);
+    cursor: pointer;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+
+  .q-footer {
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .issue-count { font-size: 11px; color: var(--text-sub); }
+  .accept-all {
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 500;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+  .accept-all:hover { text-decoration: underline; }
+
+  /* Right Panel */
+  .panel {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-tab {
+    flex: 1;
+    padding: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    color: var(--text-sub);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .panel-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .panel-content { flex: 1; overflow-y: auto; padding: 16px; }
+
+  .issue-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .issue-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .issue-head {
+    padding: 10px 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .issue-icon { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+  .issue-info { flex: 1; }
+  .issue-type { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 3px; }
+  .issue-type.warn { color: var(--warn); }
+  .issue-type.error { color: var(--error); }
+  .issue-type.info { color: var(--accent); }
+  .issue-desc { font-size: 12px; line-height: 1.5; }
+
+  .issue-body {
+    border-top: 1px solid var(--border);
+    padding: 12px;
+    background: var(--bg);
+  }
+  .diff-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .diff-label { font-size: 10px; font-weight: 600; color: var(--text-sub); margin-bottom: 2px; }
+  .diff-before {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 8px;
+    background: var(--error-light);
+    border-radius: 4px;
+    color: var(--error);
+    text-decoration: line-through;
+  }
+  .diff-after {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 8px;
+    background: var(--ok-light);
+    border-radius: 4px;
+    color: var(--ok);
+  }
+  .reason {
+    font-size: 11px;
+    color: var(--text-sub);
+    line-height: 1.6;
+    padding: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  .issue-actions { display: flex; gap: 6px; }
+  .btn-accept {
+    flex: 1;
+    background: var(--ok);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-accept:hover { background: #145C38; }
+  .btn-reject {
+    flex: 1;
+    background: none;
+    color: var(--error);
+    border: 1px solid var(--error);
+    border-radius: 5px;
+    padding: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-reject:hover { background: var(--error-light); }
+
+  /* Summary */
+  .summary-card {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .summary-title { font-size: 11px; font-weight: 700; margin-bottom: 12px; color: var(--text-sub); letter-spacing: 0.05em; text-transform: uppercase; }
+  .summary-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-item { text-align: center; padding: 10px 8px; background: var(--surface); border-radius: 6px; border: 1px solid var(--border); }
+  .stat-num { font-size: 22px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 10px; color: var(--text-sub); margin-top: 3px; }
+  .stat-error .stat-num { color: var(--error); }
+  .stat-warn .stat-num { color: var(--warn); }
+  .stat-ok .stat-num { color: var(--ok); }
+  .stat-total .stat-num { color: var(--text); }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    margin: 12px 0 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ok), #52C97A);
+    border-radius: 99px;
+    width: 35%;
+    transition: width 0.5s ease;
+  }
+  .progress-label { font-size: 11px; color: var(--text-sub); }
+
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  .comment-area { margin-top: 16px; }
+  .comment-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 12px;
+    font-family: inherit;
+    resize: none;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+
+  /* Tooltip style for status pill */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .pill-processing { background: var(--accent-light); color: var(--accent); }
+  .pill-done { background: var(--ok-light); color: var(--ok); }
+
+  .dot-pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+  .section-divider {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+    padding: 12px 16px 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">Kozeми <span>英語校正 AI</span></div>
+    <span class="badge">BETA</span>
+  </div>
+  <div class="header-right">
+    <span class="status-pill pill-done">✓ AI校正完了</span>
+    <div class="user-chip">
+      <div class="avatar">田</div>
+      <span>田中（制作）</span>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ファイルを追加</div>
+      <div class="upload-area">
+        <div class="upload-icon">📂</div>
+        <div class="upload-text"><strong>クリックまたはドロップ</strong><br>Excel / Word / PDF に対応</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="flex:1;overflow-y:auto;">
+      <div class="sidebar-label">対象ファイル</div>
+      <div class="file-list">
+        <div class="file-item active">
+          <span class="file-icon">📄</span>
+          <div class="file-info">
+            <div class="file-name">2025年度_第3回_英語.xlsx</div>
+            <div class="file-meta">設問 24問 · 校正済</div>
+          </div>
+          <div class="file-status status-warn"></div>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📄</span>
+          <div class="file-info">
+            <div class="file-name">2025年度_第2回_英語.xlsx</div>
+            <div class="file-meta">設問 22問 · 校正済</div>
+          </div>
+          <div class="file-status status-done"></div>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📄</span>
+          <div class="file-info">
+            <div class="file-name">2025年度_第1回_英語.xlsx</div>
+            <div class="file-meta">設問 20問 · 未校正</div>
+          </div>
+          <div class="file-status status-pending"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">校正オプション</div>
+      <div class="check-options">
+        <label class="check-option"><input type="checkbox" checked> 文法・語法エラー</label>
+        <label class="check-option"><input type="checkbox" checked> スペルミス</label>
+        <label class="check-option"><input type="checkbox" checked> 問題の整合性チェック</label>
+        <label class="check-option"><input type="checkbox"> 難易度スコア付与</label>
+        <label class="check-option"><input type="checkbox"> 類似問題の重複検出</label>
+      </div>
+    </div>
+
+    <button class="run-btn">⚡ AI校正を実行</button>
+  </div>
+
+  <!-- Main Editor -->
+  <div class="main">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div>
+          <div class="doc-title">2025年度 第3回 英語設問</div>
+          <div class="doc-meta">24問 · 指摘 7件（要確認 3件、提案 4件）</div>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn-ghost">⬇ Excelで出力</button>
+        <button class="btn-ghost">📋 レポート</button>
+        <button class="btn-primary">✓ 承認して確定</button>
+      </div>
+    </div>
+
+    <div class="editor-area">
+
+      <!-- Q1 -->
+      <div class="question-block has-error">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(1)</span>
+          <div class="q-tags">
+            <span class="tag tag-error">⚠ 文法エラー</span>
+          </div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">Choose the word that best completes the sentence.
+
+She has been studying English <span class="highlight-error" title="文法エラー">since three years</span>, and her skills have improved significantly.
+
+① since  ② for  ③ during  ④ while</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">1件の指摘</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="question-block has-issue">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(2)</span>
+          <div class="q-tags">
+            <span class="tag tag-warn">提案 2件</span>
+          </div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">Read the passage and answer the question below.
+
+The new policy will <span class="highlight-warn" title="語法の提案">effect</span> all students starting next semester. The changes are designed to <span class="highlight-warn" title="表現の提案">make better</span> the learning environment.
+
+Q: What is the main purpose of the new policy?</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">2件の指摘</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>
+
+      <!-- Q3 Clean -->
+      <div class="question-block clean">
+        <div class="q-header">
+          <span class="q-num">大問1 · 設問(3)</span>
+          <div class="q-tags">
+            <span class="tag tag-ok">✓ 問題なし</span>
+          </div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">Choose the most appropriate response.
+
+A: "Have you finished the assignment?"
+B: _______________
+
+① "Yes, I finished it yesterday."
+② "No, I will finish it yesterday."
+③ "Yes, I am finishing it yesterday."
+④ "No, I haven't finished it yet."</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">指摘なし</span>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="question-block has-issue">
+        <div class="q-header">
+          <span class="q-num">大問2 · 設問(1)</span>
+          <div class="q-tags">
+            <span class="tag tag-info">整合性の確認</span>
+          </div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">Read the following email and answer questions (1)–(3).
+
+Dear Mr. Johnson,
+
+I am writing to inquiry about the availability of the conference room on March 15th. Our team would like to hold a meeting from 2:00 PM to 5:00 PM. Could you please let us know if the room is available?
+
+Q(1): What is the main purpose of this email?
+Q(2): What time does the meeting start?
+Q(3): What date is requested?</div>
+        </div>
+        <div class="q-footer">
+          <span class="issue-count">1件の指摘（問題文とQ設定の確認）</span>
+          <button class="accept-all">すべて承認</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="panel">
+    <div class="panel-tabs">
+      <div class="panel-tab active">指摘一覧</div>
+      <div class="panel-tab">サマリー</div>
+      <div class="panel-tab">コメント</div>
+    </div>
+    <div class="panel-content">
+
+      <!-- Summary Card -->
+      <div class="summary-card">
+        <div class="summary-title">校正結果サマリー</div>
+        <div class="summary-stats">
+          <div class="stat-item stat-error">
+            <div class="stat-num">3</div>
+            <div class="stat-label">要修正</div>
+          </div>
+          <div class="stat-item stat-warn">
+            <div class="stat-num">4</div>
+            <div class="stat-label">提案</div>
+          </div>
+          <div class="stat-item stat-ok">
+            <div class="stat-num">17</div>
+            <div class="stat-label">問題なし</div>
+          </div>
+          <div class="stat-item stat-total">
+            <div class="stat-num">24</div>
+            <div class="stat-label">設問合計</div>
+          </div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div>
+        <div class="progress-label">承認済 3 / 7件</div>
+      </div>
+
+      <!-- Issue 1 -->
+      <div class="issue-card selected">
+        <div class="issue-head">
+          <span class="issue-icon">🔴</span>
+          <div class="issue-info">
+            <div class="issue-type error">文法エラー · 大問1(1)</div>
+            <div class="issue-desc">期間を表す前置詞の誤用</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-label">修正前</div>
+            <div class="diff-before">since three years</div>
+            <div class="diff-label">修正案</div>
+            <div class="diff-after">for three years</div>
+          </div>
+          <div class="reason">
+            「since」は起点（"since 2020"）に使い、「for」は継続期間（"for three years"）に使います。数値＋期間の場合は「for」が正しい用法です。
+          </div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issue 2 -->
+      <div class="issue-card">
+        <div class="issue-head">
+          <span class="issue-icon">🟠</span>
+          <div class="issue-info">
+            <div class="issue-type warn">語法の提案 · 大問1(2)</div>
+            <div class="issue-desc">動詞の品詞誤用（affect / effect）</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-before">effect all students</div>
+            <div class="diff-after">affect all students</div>
+          </div>
+          <div class="reason">
+            「effect」は名詞（効果）または「もたらす」の他動詞。「影響を与える」には動詞「affect」が適切です。
+          </div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issue 3 -->
+      <div class="issue-card">
+        <div class="issue-head">
+          <span class="issue-icon">🟠</span>
+          <div class="issue-info">
+            <div class="issue-type warn">表現の提案 · 大問1(2)</div>
+            <div class="issue-desc">不自然な表現（自然な英語への修正）</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-before">make better the learning environment</div>
+            <div class="diff-after">improve the learning environment</div>
+          </div>
+          <div class="reason">
+            "make better" は文法的には可能ですが不自然。"improve" がより自然で簡潔な表現です。
+          </div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issue 4 -->
+      <div class="issue-card">
+        <div class="issue-head">
+          <span class="issue-icon">🔵</span>
+          <div class="issue-info">
+            <div class="issue-type info">整合性の確認 · 大問2(1)</div>
+            <div class="issue-desc">問題文に "inquiry" は名詞用法の可能性</div>
+          </div>
+        </div>
+        <div class="issue-body">
+          <div class="diff-row">
+            <div class="diff-before">writing to inquiry about</div>
+            <div class="diff-after">writing to inquire about</div>
+          </div>
+          <div class="reason">
+            "inquiry" は名詞。"to" の後には動詞原形が必要なため "inquire" が正しい形です。
+          </div>
+          <div class="issue-actions">
+            <button class="btn-accept">✓ 承認</button>
+            <button class="btn-reject">✕ 却下</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

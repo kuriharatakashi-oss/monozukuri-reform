@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>難易度調整 フィードバックツール</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0F1117;
+  --surface: #181B24;
+  --surface2: #1F2330;
+  --border: #2A2F3E;
+  --text: #E8EAF0;
+  --text-sub: #7A8099;
+  --accent: #4F8EF7;
+  --accent-dim: rgba(79,142,247,0.12);
+  --warn: #F5A623;
+  --warn-dim: rgba(245,166,35,0.12);
+  --ok: #3DD68C;
+  --ok-dim: rgba(61,214,140,0.12);
+  --error: #F76F6F;
+  --error-dim: rgba(247,111,111,0.12);
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Syne', 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+}
+.logo {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.logo em { color: var(--accent); font-style: normal; }
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 12px;
+  color: var(--text-sub);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.exam-chip {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* ===== LAYOUT ===== */
+.app {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: calc(100vh - 56px);
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.upload-zone {
+  margin: 16px;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface2);
+}
+.upload-zone:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.upload-icon { font-size: 24px; margin-bottom: 8px; }
+.upload-text { font-size: 11px; color: var(--text-sub); line-height: 1.6; font-family: 'Noto Sans JP', sans-serif; }
+.upload-text strong { color: var(--accent); }
+
+.sidebar-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  padding: 12px 16px 8px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.filter-row {
+  padding: 0 16px 12px;
+  display: flex;
+  gap: 6px;
+}
+.filter-btn {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-sub);
+  font-size: 11px;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.15s;
+  text-align: center;
+}
+.filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.filter-btn:hover:not(.active) { background: var(--surface2); color: var(--text); }
+
+.question-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 16px;
+}
+.question-list::-webkit-scrollbar { width: 4px; }
+.question-list::-webkit-scrollbar-track { background: transparent; }
+.question-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.q-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.q-item:hover { background: var(--surface2); }
+.q-item.active { background: var(--accent-dim); border-color: var(--accent); }
+.q-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.q-subject { font-size: 12px; font-weight: 700; }
+.q-rate {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+.rate-low { color: var(--error); }
+.rate-high { color: var(--warn); }
+.rate-ok { color: var(--ok); }
+.q-item-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.q-area { font-size: 10px; color: var(--text-sub); }
+.q-status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.dot-error { background: var(--error); }
+.dot-warn { background: var(--warn); }
+.dot-ok { background: var(--ok); }
+.dot-draft { background: var(--accent); }
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.run-btn {
+  width: 100%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.run-btn:hover { background: #3A7AE4; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,142,247,0.35); }
+
+/* ===== MAIN ===== */
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-toolbar {
+  padding: 16px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.main-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+.main-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; font-family: 'Noto Sans JP', sans-serif; }
+.toolbar-actions { display: flex; gap: 8px; }
+.btn-ghost {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--text); border-color: var(--text-sub); }
+.btn-ok {
+  background: var(--ok-dim);
+  border: 1px solid var(--ok);
+  color: var(--ok);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.15s;
+}
+.btn-ok:hover { background: var(--ok); color: #0F1117; }
+
+/* ===== CONTENT ===== */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Stats Row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--text-sub);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.stat-error .stat-num { color: var(--error); }
+.stat-warn .stat-num { color: var(--warn); }
+.stat-ok .stat-num { color: var(--ok); }
+.stat-accent .stat-num { color: var(--accent); }
+
+/* Area Cards */
+.area-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.area-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+}
+.area-info { display: flex; align-items: center; gap: 12px; }
+.area-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.icon-hakata { background: rgba(79,142,247,0.2); }
+.icon-osaka { background: rgba(61,214,140,0.2); }
+.icon-nagoya { background: rgba(245,166,35,0.2); }
+.area-name { font-size: 14px; font-weight: 800; }
+.area-meta { font-size: 11px; color: var(--text-sub); font-family: 'Noto Sans JP', sans-serif; margin-top: 2px; }
+.area-badges { display: flex; gap: 6px; align-items: center; }
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.badge-error { background: var(--error-dim); color: var(--error); border: 1px solid var(--error); }
+.badge-warn { background: var(--warn-dim); color: var(--warn); border: 1px solid var(--warn); }
+.badge-ok { background: var(--ok-dim); color: var(--ok); border: 1px solid var(--ok); }
+
+/* Question rows */
+.q-rows { padding: 0 20px; }
+.q-row {
+  display: grid;
+  grid-template-columns: 100px 80px 80px 1fr 100px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.q-row:last-child { border-bottom: none; }
+.q-row-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+.q-label { font-size: 12px; font-weight: 700; }
+.q-num-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+.target-range {
+  font-size: 10px;
+  color: var(--text-sub);
+  text-align: center;
+  margin-top: 2px;
+}
+.issue-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.issue-hard { background: var(--error-dim); color: var(--error); }
+.issue-easy { background: var(--warn-dim); color: var(--warn); }
+.issue-ok { background: var(--ok-dim); color: var(--ok); }
+.action-btn {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-sub);
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.action-btn:hover { background: var(--surface2); color: var(--text); }
+.action-btn.draft { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* Draft section */
+.draft-section {
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+}
+.draft-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.draft-title {
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-badge {
+  font-size: 9px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.draft-actions { display: flex; gap: 6px; }
+.btn-sm {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-sm-ghost { border: 1px solid var(--border); background: none; color: var(--text-sub); }
+.btn-sm-ghost:hover { background: var(--surface); color: var(--text); }
+.btn-sm-accent { border: 1px solid var(--accent); background: var(--accent-dim); color: var(--accent); font-weight: 700; }
+.btn-sm-accent:hover { background: var(--accent); color: white; }
+
+.draft-body { padding: 16px 20px; }
+.draft-textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  color: var(--text);
+  line-height: 1.8;
+  resize: none;
+  min-height: 160px;
+  transition: border-color 0.15s;
+}
+.draft-textarea:focus { outline: none; border-color: var(--accent); }
+
+.regen-note {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-top: 8px;
+  font-family: 'Noto Sans JP', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Collapsed card */
+.area-card.collapsed .draft-section { display: none; }
+.area-card.collapsed .q-rows { display: none; }
+
+.expand-toggle {
+  font-size: 11px;
+  color: var(--text-sub);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: 'Noto Sans JP', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s;
+}
+.expand-toggle:hover { color: var(--text); }
+
+/* Progress bar */
+.progress-wrap { padding: 0 20px 16px; }
+.progress-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-sub);
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-bottom: 6px;
+}
+.progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--ok));
+  border-radius: 99px;
+}
+
+.copy-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ok);
+  color: #0F1117;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Noto Sans JP', sans-serif;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  z-index: 100;
+}
+.copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">模試 <em>難易度調整</em> Hub</div>
+  <div class="header-meta">
+    <span>担当：山田（制作部）</span>
+    <span class="exam-chip">2026年 3月模試</span>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="upload-zone">
+      <div class="upload-icon">📊</div>
+      <div class="upload-text"><strong>Excelをアップロード</strong><br>グロップから受領したデータ</div>
+    </div>
+
+    <div class="sidebar-label">要調整設問（7件）</div>
+
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterItems(this,'all')">すべて</button>
+      <button class="filter-btn" onclick="filterItems(this,'hard')">難しすぎ</button>
+      <button class="filter-btn" onclick="filterItems(this,'easy')">易しすぎ</button>
+    </div>
+
+    <div class="question-list">
+      <div class="q-item active" onclick="selectItem(this)">
+        <div class="q-item-top">
+          <span class="q-subject">地学 大問2(3)</span>
+          <span class="q-rate rate-low">正答率 18%</span>
+        </div>
+        <div class="q-item-bottom">
+          <span class="q-area">博多エリア</span>
+          <div class="q-status-dot dot-draft"></div>
+        </div>
+      </div>
+      <div class="q-item" onclick="selectItem(this)">
+        <div class="q-item-top">
+          <span class="q-subject">地学 大問3(1)</span>
+          <span class="q-rate rate-low">正答率 22%</span>
+        </div>
+        <div class="q-item-bottom">
+          <span class="q-area">博多エリア</span>
+          <div class="q-status-dot dot-error"></div>
+        </div>
+      </div>
+      <div class="q-item" onclick="selectItem(this)">
+        <div class="q-item-top">
+          <span class="q-subject">英語 大問1(2)</span>
+          <span class="q-rate rate-high">正答率 91%</span>
+        </div>
+        <div class="q-item-bottom">
+          <span class="q-area">大阪エリア</span>
+          <div class="q-status-dot dot-warn"></div>
+        </div>
+      </div>
+      <div class="q-item" onclick="selectItem(this)">
+        <div class="q-item-top">
+          <span class="q-subject">英語 大問4(1)</span>
+          <span class="q-rate rate-low">正答率 15%</span>
+        </div>
+        <div class="q-item-bottom">
+          <span class="q-area">大阪エリア</span>
+          <div class="q-status-dot dot-error"></div>
+        </div>
+      </div>
+      <div class="q-item" onclick="selectItem(this)">
+        <div class="q-item-top">
+          <span class="q-subject">数学 大問2(2)</span>
+          <span class="q-rate rate-high">正答率 88%</span>
+        </div>
+        <div class="q-item-bottom">
+          <span class="q-area">名古屋エリア</span>
+          <div class="q-status-dot dot-warn"></div>
+        </div>
+      </div>
+      <div class="q-item" onclick="selectItem(this)">
+        <div class="q-item-top">
+          <span class="q-subject">数学 大問3(4)</span>
+          <span class="q-rate rate-low">正答率 12%</span>
+        </div>
+        <div class="q-item-bottom">
+          <span class="q-area">名古屋エリア</span>
+          <div class="q-status-dot dot-error"></div>
+        </div>
+      </div>
+      <div class="q-item" onclick="selectItem(this)">
+        <div class="q-item-top">
+          <span class="q-subject">国語 大問1(1)</span>
+          <span class="q-rate rate-low">正答率 19%</span>
+        </div>
+        <div class="q-item-bottom">
+          <span class="q-area">福岡エリア</span>
+          <div class="q-status-dot dot-ok"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="run-btn" onclick="generateAll()">⚡ 全エリアのドラフト生成</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-toolbar">
+      <div>
+        <div class="main-title">エリア別 フィードバックドラフト</div>
+        <div class="main-sub">要調整設問を確認し、先生へのご連絡文を送付してください</div>
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn-ghost">📥 全文コピー</button>
+        <button class="btn-ghost">📋 レポート出力</button>
+        <button class="btn-ok" onclick="completeAll()">✓ 全エリア送付済みにする</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card stat-error">
+          <div class="stat-num">7</div>
+          <div class="stat-label">要調整設問</div>
+        </div>
+        <div class="stat-card stat-accent">
+          <div class="stat-num">3</div>
+          <div class="stat-label">対象エリア</div>
+        </div>
+        <div class="stat-card stat-ok">
+          <div class="stat-num">1</div>
+          <div class="stat-label">ドラフト完了</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">0</div>
+          <div class="stat-label">送付済み</div>
+        </div>
+      </div>
+
+      <!-- 博多エリア -->
+      <div class="area-card" id="card-hakata">
+        <div class="area-header">
+          <div class="area-info">
+            <div class="area-icon icon-hakata">🗾</div>
+            <div>
+              <div class="area-name">博多エリア</div>
+              <div class="area-meta">担当先生：山本先生・田中先生　/ 地学</div>
+            </div>
+          </div>
+          <div class="area-badges">
+            <span class="badge badge-error">難しすぎ 2件</span>
+            <button class="expand-toggle" onclick="toggleCard('card-hakata', this)">▲ 折りたたむ</button>
+          </div>
+        </div>
+
+        <div class="q-rows">
+          <div class="q-row q-row-header">
+            <span>設問</span>
+            <span style="text-align:center">正答率</span>
+            <span style="text-align:center">目標範囲</span>
+            <span>判定</span>
+            <span></span>
+          </div>
+          <div class="q-row">
+            <span class="q-label">地学 大問2(3)</span>
+            <span class="q-num-val rate-low">18%</span>
+            <span class="q-num-val" style="color:var(--text-sub)">40〜60%</span>
+            <span class="issue-tag issue-hard">⬆ 難しすぎ</span>
+            <button class="action-btn">設問を確認</button>
+          </div>
+          <div class="q-row">
+            <span class="q-label">地学 大問3(1)</span>
+            <span class="q-num-val rate-low">22%</span>
+            <span class="q-num-val" style="color:var(--text-sub)">40〜60%</span>
+            <span class="issue-tag issue-hard">⬆ 難しすぎ</span>
+            <button class="action-btn">設問を確認</button>
+          </div>
+        </div>
+
+        <div class="draft-section">
+          <div class="draft-header">
+            <div class="draft-title">
+              先生へのご連絡文（ドラフト）
+              <span class="ai-badge">AI生成</span>
+            </div>
+            <div class="draft-actions">
+              <button class="btn-sm btn-sm-ghost" onclick="regenerate('hakata')">🔄 再生成</button>
+              <button class="btn-sm btn-sm-accent" onclick="copyDraft('hakata')">📋 コピー</button>
+            </div>
+          </div>
+          <div class="draft-body">
+            <textarea class="draft-textarea" id="draft-hakata">山本先生・田中先生
+
+お世話になっております。〇〇（制作部）でございます。
+この度は2026年3月模試・地学の設問作成にご協力いただき、誠にありがとうございます。
+
+プレテストの結果をご報告させていただきます。
+下記の設問につきまして、目標正答率（40〜60%）を大きく下回る結果となりました。
+
+■ 地学 大問2(3)　正答率：18%
+■ 地学 大問3(1)　正答率：22%
+
+受験生の学習段階を踏まえますと、難易度が高すぎる可能性がございます。
+つきましては、設問の難易度調整または差し替えについて、先生のご意見をお聞かせいただけますでしょうか。
+
+お忙しいところ恐れ入りますが、〇月〇日（〇）までにご回答いただけますと幸いです。
+何卒よろしくお願いいたします。</textarea>
+            <div class="regen-note">💡 トーンや文体を変えて再生成できます</div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-label-row">
+              <span>ステータス：ドラフト生成済み</span>
+              <button class="btn-sm btn-sm-accent" style="padding:4px 10px;font-size:10px;" onclick="markSent('hakata')">✓ 送付済みにする</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 大阪エリア -->
+      <div class="area-card" id="card-osaka">
+        <div class="area-header">
+          <div class="area-info">
+            <div class="area-icon icon-osaka">🏙</div>
+            <div>
+              <div class="area-name">大阪エリア</div>
+              <div class="area-meta">担当先生：佐藤先生・木村先生　/ 英語</div>
+            </div>
+          </div>
+          <div class="area-badges">
+            <span class="badge badge-warn">易しすぎ 1件</span>
+            <span class="badge badge-error">難しすぎ 1件</span>
+            <button class="expand-toggle" onclick="toggleCard('card-osaka', this)">▲ 折りたたむ</button>
+          </div>
+        </div>
+
+        <div class="q-rows">
+          <div class="q-row q-row-header">
+            <span>設問</span>
+            <span style="text-align:center">正答率</span>
+            <span style="text-align:center">目標範囲</span>
+            <span>判定</span>
+            <span></span>
+          </div>
+          <div class="q-row">
+            <span class="q-label">英語 大問1(2)</span>
+            <span class="q-num-val rate-high">91%</span>
+            <span class="q-num-val" style="color:var(--text-sub)">50〜70%</span>
+            <span class="issue-tag issue-easy">⬇ 易しすぎ</span>
+            <button class="action-btn">設問を確認</button>
+          </div>
+          <div class="q-row">
+            <span class="q-label">英語 大問4(1)</span>
+            <span class="q-num-val rate-low">15%</span>
+            <span class="q-num-val" style="color:var(--text-sub)">40〜60%</span>
+            <span class="issue-tag issue-hard">⬆ 難しすぎ</span>
+            <button class="action-btn">設問を確認</button>
+          </div>
+        </div>
+
+        <div class="draft-section">
+          <div class="draft-header">
+            <div class="draft-title">
+              先生へのご連絡文（ドラフト）
+              <span class="ai-badge">AI生成</span>
+            </div>
+            <div class="draft-actions">
+              <button class="btn-sm btn-sm-ghost" onclick="regenerate('osaka')">🔄 再生成</button>
+              <button class="btn-sm btn-sm-accent" onclick="copyDraft('osaka')">📋 コピー</button>
+            </div>
+          </div>
+          <div class="draft-body">
+            <textarea class="draft-textarea" id="draft-osaka">佐藤先生・木村先生
+
+お世話になっております。〇〇（制作部）でございます。
+2026年3月模試・英語のプレテスト結果についてご連絡申し上げます。
+
+下記2設問につきまして、難易度に調整が必要な可能性がございます。
+
+■ 英語 大問1(2)　正答率：91%（目標：50〜70%）→ やや易しすぎる可能性
+■ 英語 大問4(1)　正答率：15%（目標：40〜60%）→ 難しすぎる可能性
+
+特に大問4(1)は正答率が目標を大きく下回っており、受験生には難度が高い内容となっているようです。
+先生方のご判断にて、選択肢の調整や問題文の修正などご検討いただけますでしょうか。
+
+ご多忙の中、大変恐れ入りますが、〇月〇日（〇）までにご意見をいただけますと幸いです。
+何卒よろしくお願いいたします。</textarea>
+            <div class="regen-note">💡 トーンや文体を変えて再生成できます</div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-label-row">
+              <span>ステータス：ドラフト生成済み</span>
+              <button class="btn-sm btn-sm-accent" style="padding:4px 10px;font-size:10px;" onclick="markSent('osaka')">✓ 送付済みにする</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 名古屋エリア（ドラフト未生成） -->
+      <div class="area-card" id="card-nagoya">
+        <div class="area-header">
+          <div class="area-info">
+            <div class="area-icon icon-nagoya">🌆</div>
+            <div>
+              <div class="area-name">名古屋エリア</div>
+              <div class="area-meta">担当先生：鈴木先生　/ 数学</div>
+            </div>
+          </div>
+          <div class="area-badges">
+            <span class="badge badge-warn">易しすぎ 1件</span>
+            <span class="badge badge-error">難しすぎ 1件</span>
+            <button class="expand-toggle" onclick="toggleCard('card-nagoya', this)">▲ 折りたたむ</button>
+          </div>
+        </div>
+
+        <div class="q-rows">
+          <div class="q-row q-row-header">
+            <span>設問</span>
+            <span style="text-align:center">正答率</span>
+            <span style="text-align:center">目標範囲</span>
+            <span>判定</span>
+            <span></span>
+          </div>
+          <div class="q-row">
+            <span class="q-label">数学 大問2(2)</span>
+            <span class="q-num-val rate-high">88%</span>
+            <span class="q-num-val" style="color:var(--text-sub)">50〜70%</span>
+            <span class="issue-tag issue-easy">⬇ 易しすぎ</span>
+            <button class="action-btn">設問を確認</button>
+          </div>
+          <div class="q-row">
+            <span class="q-label">数学 大問3(4)</span>
+            <span class="q-num-val rate-low">12%</span>
+            <span class="q-num-val" style="color:var(--text-sub)">40〜60%</span>
+            <span class="issue-tag issue-hard">⬆ 難しすぎ</span>
+            <button class="action-btn">設問を確認</button>
+          </div>
+        </div>
+
+        <div class="draft-section">
+          <div class="draft-header">
+            <div class="draft-title">先生へのご連絡文</div>
+            <div class="draft-actions">
+              <button class="btn-sm btn-sm-accent" onclick="generateDraft('nagoya')">⚡ ドラフト生成</button>
+            </div>
+          </div>
+          <div class="draft-body">
+            <div style="padding:24px;text-align:center;color:var(--text-sub);font-family:'Noto Sans JP',sans-serif;font-size:13px;" id="draft-nagoya-empty">
+              「ドラフト生成」ボタンでAIが連絡文を作成します
+            </div>
+            <textarea class="draft-textarea" id="draft-nagoya" style="display:none"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="toast">📋 クリップボードにコピーしました</div>
+
+<script>
+function toggleCard(id, btn) {
+  const card = document.getElementById(id);
+  const isCollapsed = card.classList.toggle('collapsed');
+  btn.textContent = isCollapsed ? '▼ 展開する' : '▲ 折りたたむ';
+}
+
+function filterItems(btn, type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selectItem(el) {
+  document.querySelectorAll('.q-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function copyDraft(area) {
+  const ta = document.getElementById('draft-' + area);
+  if (ta) {
+    navigator.clipboard.writeText(ta.value).catch(() => {});
+    showToast();
+  }
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function regenerate(area) {
+  const ta = document.getElementById('draft-' + area);
+  if (!ta) return;
+  const original = ta.value;
+  ta.value = '再生成中...';
+  ta.disabled = true;
+  setTimeout(() => {
+    ta.value = original;
+    ta.disabled = false;
+  }, 1200);
+}
+
+function generateDraft(area) {
+  const empty = document.getElementById('draft-' + area + '-empty');
+  const ta = document.getElementById('draft-' + area);
+  if (!ta) return;
+  if (empty) empty.style.display = 'none';
+  ta.style.display = 'block';
+  ta.value = '生成中...';
+  ta.disabled = true;
+  setTimeout(() => {
+    ta.value = `鈴木先生
+
+お世話になっております。〇〇（制作部）でございます。
+2026年3月模試・数学のプレテスト結果についてご連絡申し上げます。
+
+下記2設問につきまして、難易度に調整が必要な可能性がございます。
+
+■ 数学 大問2(2)　正答率：88%（目標：50〜70%）→ やや易しすぎる可能性
+■ 数学 大問3(4)　正答率：12%（目標：40〜60%）→ 難しすぎる可能性
+
+特に大問3(4)は正答率が目標を大きく下回っており、受験生には難度が高い内容となっているようです。
+先生のご判断にて、選択肢の調整や問題文の修正などご検討いただけますでしょうか。
+
+ご多忙の中、大変恐れ入りますが、〇月〇日（〇）までにご意見をいただけますと幸いです。
+何卒よろしくお願いいたします。`;
+    ta.disabled = false;
+    // Update button
+    const btn = ta.closest('.area-card').querySelector('.draft-header .draft-actions');
+    btn.innerHTML = `<button class="btn-sm btn-sm-ghost" onclick="regenerate('nagoya')">🔄 再生成</button><button class="btn-sm btn-sm-accent" onclick="copyDraft('nagoya')">📋 コピー</button>`;
+  }, 1500);
+}
+
+function generateAll() {
+  generateDraft('nagoya');
+}
+
+function markSent(area) {
+  const card = document.getElementById('card-' + area);
+  const progressWrap = card.querySelector('.progress-wrap');
+  if (progressWrap) {
+    const labelRow = progressWrap.querySelector('.progress-label-row span');
+    const btn = progressWrap.querySelector('button');
+    if (labelRow) labelRow.textContent = '✅ 送付済み';
+    if (btn) { btn.textContent = '送付済み'; btn.disabled = true; btn.style.opacity = '0.5'; }
+  }
+}
+
+function completeAll() {
+  ['hakata','osaka','nagoya'].forEach(markSent);
+}
+</script>
+</body>
+</html>
