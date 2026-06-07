@@ -742,6 +742,64 @@
     .preview-scroll { padding: 0; overflow: visible; }
     .a4-paper { box-shadow: none; padding: 0; }
   }
+
+  /* ── File Tree ─────────────────────────── */
+  .tree-root { display: flex; flex-direction: column; }
+  .tree-node { }
+  .tree-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11.5px;
+    transition: background 0.12s;
+    border: 1px solid transparent;
+    user-select: none;
+    line-height: 1.4;
+  }
+  .tree-row:hover { background: var(--surface2); }
+  .tree-row.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .tree-arrow {
+    width: 10px;
+    font-size: 9px;
+    color: var(--text-sub);
+    flex-shrink: 0;
+    text-align: center;
+    transition: none;
+  }
+  .tree-ico { font-size: 12px; flex-shrink: 0; line-height: 1; }
+  .tree-lbl {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tree-count { font-size: 9px; color: var(--text-sub); flex-shrink: 0; }
+  .tree-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .tree-children {
+    margin-left: 10px;
+    padding-left: 6px;
+    border-left: 1px solid var(--border);
+  }
+  .tree-children.closed { display: none; }
+  /* Depth styling */
+  .tl0 > .tree-row { font-weight: 700; color: var(--text); font-size: 12px; }
+  .tl1 > .tree-row { font-weight: 600; color: var(--text); font-size: 11px; }
+  .tl2 > .tree-row { font-weight: 500; color: var(--text-sub); font-size: 11px; }
+  .tl3 > .tree-row { font-weight: 500; color: var(--text); font-size: 11px; }
+  .tl3 > .tree-row.active { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -779,8 +837,8 @@
     </div>
 
     <div class="sidebar-section" style="flex:1;overflow-y:auto;">
-      <div class="sidebar-label">対象ファイル</div>
-      <div id="file-list" class="file-list"></div>
+      <div class="sidebar-label">ファイルツリー</div>
+      <div id="file-list" class="tree-root"></div>
     </div>
 
     <div class="sidebar-section">
@@ -1380,6 +1438,99 @@ n² − n − 6 = 0
   },
 };
 
+// ── File Tree Data ────────────────────────────
+const FILE_TREE = [
+  { label: '進研模試', icon: '📋', open: true, children: [
+    { label: '2026年', icon: '📁', open: true, children: [
+      { label: '3月', icon: '📅', open: true, children: [
+        { label: '英語', subject: 'english',  status: 'warn',    q: 24 },
+        { label: '国語', subject: 'japanese', status: 'warn',    q: 20 },
+        { label: '数学', subject: 'math',     status: 'warn',    q: 18 },
+      ]},
+      { label: '1月', icon: '📅', open: false, children: [
+        { label: '英語', subject: 'english',  status: 'done',    q: 22 },
+        { label: '国語', subject: 'japanese', status: 'done',    q: 20 },
+        { label: '数学', subject: 'math',     status: 'done',    q: 16 },
+      ]},
+    ]},
+    { label: '2025年', icon: '📁', open: false, children: [
+      { label: '11月', icon: '📅', open: false, children: [
+        { label: '英語', subject: 'english',  status: 'done',    q: 24 },
+        { label: '国語', subject: 'japanese', status: 'done',    q: 20 },
+        { label: '数学', subject: 'math',     status: 'done',    q: 18 },
+      ]},
+    ]},
+  ]},
+  { label: '全統模試', icon: '📋', open: false, children: [
+    { label: '2026年', icon: '📁', open: false, children: [
+      { label: '4月', icon: '📅', open: false, children: [
+        { label: '英語', subject: 'english',  status: 'pending', q: 0 },
+        { label: '国語', subject: 'japanese', status: 'pending', q: 0 },
+        { label: '数学', subject: 'math',     status: 'pending', q: 0 },
+      ]},
+    ]},
+  ]},
+];
+
+var activeNodeId = null;
+
+function renderTree(nodes, depth, path) {
+  return nodes.map(function(node, i) {
+    var id = path + '_' + i;
+    if (!node.children) {
+      // 科目（葉ノード）
+      return '<div class="tree-node tl' + depth + '">' +
+        '<div class="tree-row" id="nd_' + id + '" onclick="selectSubject(\'' + node.subject + '\',\'' + id + '\')">' +
+          '<span class="tree-arrow"></span>' +
+          '<span class="tree-ico">📄</span>' +
+          '<span class="tree-lbl">' + node.label + '</span>' +
+          (node.q ? '<span class="tree-count">' + node.q + '問</span>' : '') +
+          '<span class="tree-dot status-' + node.status + '"></span>' +
+        '</div>' +
+      '</div>';
+    }
+    var isOpen = node.open !== false;
+    return '<div class="tree-node tl' + depth + '">' +
+      '<div class="tree-row" onclick="toggleNode(\'' + id + '\')">' +
+        '<span class="tree-arrow" id="ar_' + id + '">' + (isOpen ? '▾' : '▸') + '</span>' +
+        '<span class="tree-ico">' + node.icon + '</span>' +
+        '<span class="tree-lbl">' + node.label + '</span>' +
+      '</div>' +
+      '<div class="tree-children' + (isOpen ? '' : ' closed') + '" id="ch_' + id + '">' +
+        renderTree(node.children, depth + 1, id) +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleNode(id) {
+  var ch = document.getElementById('ch_' + id);
+  var ar = document.getElementById('ar_' + id);
+  if (!ch) return;
+  var closed = ch.classList.toggle('closed');
+  if (ar) ar.textContent = closed ? '▸' : '▾';
+}
+
+function selectSubject(subject, id) {
+  if (activeNodeId) {
+    var prev = document.getElementById('nd_' + activeNodeId);
+    if (prev) prev.classList.remove('active');
+  }
+  activeNodeId = id;
+  var el = document.getElementById('nd_' + id);
+  if (el) el.classList.add('active');
+  switchSubject(subject);
+}
+
+function buildFileTree() {
+  document.getElementById('file-list').innerHTML = renderTree(FILE_TREE, 0, 'n');
+  // 初期アクティブ: 進研模試 > 2026年 > 3月 > 英語
+  activeNodeId = 'n_0_0_0_0';
+  var el = document.getElementById('nd_n_0_0_0_0');
+  if (el) el.classList.add('active');
+}
+
+// ─────────────────────────────────────────────
 let currentSubject = 'english';
 let currentPanelTab = 0;
 
@@ -1598,17 +1749,6 @@ function switchSubject(subject) {
   document.getElementById('doc-title').textContent = data.docTitle;
   document.getElementById('doc-meta').textContent = data.docMeta;
 
-  document.getElementById('file-list').innerHTML = data.fileItems.map(function(f) {
-    return '<div class="file-item' + (f[3] ? ' active' : '') + '">' +
-      '<span class="file-icon">📄</span>' +
-      '<div class="file-info">' +
-        '<div class="file-name">' + f[0] + '</div>' +
-        '<div class="file-meta">' + f[1] + '</div>' +
-      '</div>' +
-      '<div class="file-status status-' + f[2] + '"></div>' +
-    '</div>';
-  }).join('');
-
   document.getElementById('check-options').innerHTML = data.checkOptions.map(function(o) {
     return '<label class="check-option"><input type="checkbox"' + (o[1] ? ' checked' : '') + '> ' + o[0] + '</label>';
   }).join('');
@@ -1625,6 +1765,7 @@ function switchSubject(subject) {
   });
 }
 
+buildFileTree();
 switchSubject('english');
 </script>
 
